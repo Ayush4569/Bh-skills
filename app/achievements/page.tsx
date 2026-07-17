@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Flag, Shield, Compass, Zap, Flame, Award, Lock, CheckCircle2 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
+import { LoadingScreen } from '@/components/loader';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Flag: Flag,
@@ -18,12 +19,7 @@ export default function AchievementsPage() {
   const { progress, allAchievements, loading } = useProgress();
 
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <span className="mt-4 text-sm text-muted-foreground">Loading achievements...</span>
-      </div>
-    );
+    return <LoadingScreen message="Loading achievements..." />;
   }
 
   const userXp = progress ? progress.xp : 0;

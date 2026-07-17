@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Plus, Edit, Trash2, Globe, Terminal, Award, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { LoadingScreen } from '@/components/loader';
 
 interface Challenge {
   _id: string;
@@ -21,6 +22,23 @@ export default function AdminDashboard() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    showCancel?: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Yes',
+    cancelText: 'Cancel',
+    showCancel: true,
+    onConfirm: () => {},
+  });
 
   const fetchChallenges = async () => {
     try {
@@ -42,8 +60,19 @@ export default function AdminDashboard() {
     fetchChallenges();
   }, []);
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the challenge "${name}"?`)) return;
+  const handleDelete = (id: string, name: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Challenge',
+      message: `Are you sure you want to delete the challenge "${name}"? This action cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      showCancel: true,
+      onConfirm: () => executeDelete(id),
+    });
+  };
+
+  const executeDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/admin/labs/challenge/${id}`, {
         method: 'DELETE',
@@ -52,21 +81,27 @@ export default function AdminDashboard() {
         setChallenges((prev) => prev.filter((c) => c._id !== id));
       } else {
         const errData = await res.json();
-        alert(`Delete failed: ${errData.error || 'Unknown error'}`);
+        showErrorModal(`Delete failed: ${errData.error || 'Unknown error'}`);
       }
     } catch (err) {
       console.error(err);
-      alert('Delete failed.');
+      showErrorModal('Delete failed.');
     }
   };
 
+  const showErrorModal = (message: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Error',
+      message,
+      confirmText: 'OK',
+      showCancel: false,
+      onConfirm: () => {},
+    });
+  };
+
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <span className="mt-4 text-sm text-muted-foreground">Loading admin details...</span>
-      </div>
-    );
+    return <LoadingScreen message="Loading admin details..." />;
   }
 
   const publishedCount = challenges.filter((c) => c.published).length;
@@ -192,6 +227,46 @@ export default function AdminDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Custom Confirmation/Alert Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-6 mx-4 transform scale-100 transition-all">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {confirmModal.message}
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 pt-2">
+              {confirmModal.showCancel && (
+                <button
+                  onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                  className="px-4 py-2 text-xs font-bold rounded-lg border border-border hover:bg-muted/40 transition-colors text-foreground"
+                >
+                  {confirmModal.cancelText || 'Cancel'}
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  confirmModal.onConfirm();
+                }}
+                className={`px-4 py-2 text-xs font-bold rounded-lg text-white transition-colors ${
+                  confirmModal.title === 'Error'
+                    ? 'bg-indigo-600 hover:bg-indigo-700'
+                    : 'bg-destructive hover:bg-destructive/90'
+                }`}
+              >
+                {confirmModal.confirmText || 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

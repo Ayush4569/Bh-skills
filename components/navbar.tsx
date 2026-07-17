@@ -17,7 +17,7 @@ export default function Navbar() {
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Labs', href: '/labs', icon: Terminal },
     { name: 'Achievements', href: '/achievements', icon: Trophy },
-    { name: 'Admin', href: '/admin', icon: Settings },
+    { name: 'Admin', href: '/admin/content/library', icon: Settings },
   ];
 
   const isActive = (path: string) => {

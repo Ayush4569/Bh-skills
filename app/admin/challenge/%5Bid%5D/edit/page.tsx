@@ -4,6 +4,7 @@ import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Plus, Trash2, Save, AlertCircle } from 'lucide-react';
+import { LoadingScreen } from '@/components/loader';
 
 interface Module {
   _id: string;
@@ -148,7 +149,7 @@ export default function EditChallenge({ params }: { params: Promise<{ id: string
 
       const resData = await res.json();
       if (res.ok) {
-        router.push('/admin');
+        router.push('/admin/content/library');
       } else {
         setError(resData.error || 'Failed to update challenge.');
       }
@@ -160,12 +161,7 @@ export default function EditChallenge({ params }: { params: Promise<{ id: string
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <span className="mt-4 text-sm text-muted-foreground">Loading challenge details...</span>
-      </div>
-    );
+    return <LoadingScreen message="Loading challenge details..." />;
   }
 
   return (
@@ -173,7 +169,7 @@ export default function EditChallenge({ params }: { params: Promise<{ id: string
       {/* Back button */}
       <div>
         <Link
-          href="/admin"
+          href="/admin/content/library"
           className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="h-3 w-3" />
@@ -306,7 +302,7 @@ export default function EditChallenge({ params }: { params: Promise<{ id: string
                 onChange={(e) => setSolution(e.target.value)}
                 placeholder="The reference code solution shown when students give up..."
                 rows={6}
-                className="w-full rounded-lg border border-border/60 bg-transparent px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
+                className="w-full rounded-lg border border-border/60 px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary font-mono"
               />
             </div>
           </div>
@@ -429,7 +425,7 @@ export default function EditChallenge({ params }: { params: Promise<{ id: string
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-2">
           <Link
-            href="/admin"
+            href="/admin/content/library"
             className="rounded-xl border border-border/60 hover:bg-muted/40 text-foreground px-6 py-3 text-sm font-semibold transition-all"
           >
             Cancel

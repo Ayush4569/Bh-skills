@@ -14,7 +14,7 @@ export async function POST(
     await connectToDatabase();
     const { id } = await params;
     const body = await request.json();
-    const { code, passed } = body;
+    const { code, passed, skip } = body;
 
     const userId = 'guest_user';
 
@@ -40,7 +40,7 @@ export async function POST(
     await Attempt.findOneAndUpdate(
       { userId, challengeId: id },
       {
-        $set: { submittedCode: code, passed, completedAt: new Date() },
+        $set: { submittedCode: code || '', passed: passed || skip || false, completedAt: new Date() },
         $inc: { attempts: 1 }
       },
       { upsert: true }
@@ -49,7 +49,7 @@ export async function POST(
     let xpGained = 0;
     let newlyCompleted = false;
 
-    if (passed) {
+    if (passed || skip) {
       // Check if already completed
       const isAlreadyCompleted = progress.completedChallenges.some(
         (cId: any) => cId.toString() === id
@@ -57,23 +57,32 @@ export async function POST(
 
       if (!isAlreadyCompleted) {
         newlyCompleted = true;
-        xpGained = challenge.xp;
+        xpGained = skip ? 0 : challenge.xp;
 
         // Update arrays in progress
         progress.completedChallenges.push(challenge._id);
-        progress.xp += xpGained;
+        
+        if (xpGained > 0) {
+          progress.xp += xpGained;
 
-        // Level formula: 150 XP per level (level = floor(xp / 150) + 1)
-        const oldLevel = progress.currentLevel;
-        const newLevel = Math.floor(progress.xp / 150) + 1;
-        progress.currentLevel = newLevel;
+          // Level formula: 150 XP per level (level = floor(xp / 150) + 1)
+          const newLevel = Math.floor(progress.xp / 150) + 1;
+          progress.currentLevel = newLevel;
 
-        // Log XP
-        await XPLog.create({
-          userId,
-          amount: xpGained,
-          reason: `Completed Challenge: ${challenge.title}`,
-        });
+          // Log XP
+          await XPLog.create({
+            userId,
+            amount: xpGained,
+            reason: `Completed Challenge: ${challenge.title}`,
+          });
+        } else if (skip) {
+          // Log Skip
+          await XPLog.create({
+            userId,
+            amount: 0,
+            reason: `Skipped Challenge: ${challenge.title}`,
+          });
+        }
 
         // Unlock next challenge if applicable
         if (challenge.nextChallengeId) {

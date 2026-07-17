@@ -19,6 +19,7 @@ import {
   Lock
 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
+import { LoadingScreen } from '@/components/loader';
 
 // Map icon names to Lucide icons
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -33,6 +34,17 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 export default function Dashboard() {
   const { progress, xpLogs, attemptsCount, allAchievements, loading, refetchProgress } = useProgress();
   const [resetting, setResetting] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Level boundary calculations
   // Level threshold is 150 XP per level
@@ -40,8 +52,16 @@ export default function Dashboard() {
   const levelProgressPercent = Math.min((xpInCurrentLevel / 150) * 100, 100);
   const xpNeededForNextLevel = 150 - xpInCurrentLevel;
 
-  const handleResetProgress = async () => {
-    if (!confirm('Are you sure you want to reset all of your progress, XP, and attempts?')) return;
+  const handleResetProgress = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Reset Progress',
+      message: 'Are you sure you want to reset all of your progress, XP, and attempts? This action is irreversible.',
+      onConfirm: executeResetProgress,
+    });
+  };
+
+  const executeResetProgress = async () => {
     setResetting(true);
     try {
       const res = await fetch('/api/labs/progress', {
@@ -60,12 +80,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <span className="mt-4 text-sm text-muted-foreground">Loading dashboard data...</span>
-      </div>
-    );
+    return <LoadingScreen message="Loading dashboard data..." />;
   }
 
   return (
@@ -310,6 +325,40 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-6 mx-4 transform scale-100 transition-all">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {confirmModal.message}
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 text-xs font-bold rounded-lg border border-border hover:bg-muted/40 transition-colors text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  confirmModal.onConfirm();
+                }}
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-destructive hover:bg-destructive/90 text-white transition-colors"
+              >
+                Yes, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

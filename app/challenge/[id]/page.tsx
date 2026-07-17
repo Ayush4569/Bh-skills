@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
 import CodeEditor from '@/components/code-editor';
+import { LoadingScreen } from '@/components/loader';
+import { useTheme } from '@/components/theme-provider';
 
 interface ValidationRule {
   id: string;
@@ -55,6 +57,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const { id: challengeId } = use(params);
   const router = useRouter();
   const { progress, refetchProgress } = useProgress();
+  const { theme } = useTheme();
 
   // Challenge State
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -66,10 +69,24 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const [revealedSolution, setRevealedSolution] = useState(false);
   const [copiedSolution, setCopiedSolution] = useState(false);
 
+  // Confirm Modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
+
   // Running & Validation States
   const [running, setRunning] = useState(false);
   const [validating, setValidating] = useState(false);
   const [solved, setSolved] = useState(false);
+  const [skipping, setSkipping] = useState(false);
   const [testStatuses, setTestStatuses] = useState<Record<string, TestStatus>>({});
   const [consoleLogs, setConsoleLogs] = useState<{ text: string; severity: 'stdout' | 'stderr' | 'system' }[]>([]);
   const [activeRightTab, setActiveRightTab] = useState<'preview' | 'console'>('preview');
@@ -121,7 +138,20 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
 
   // Pyodide Initialization helper
   const initPyodide = async () => {
-    if ((window as any).loadPyodide && !pyodide) {
+    const maxRetries = 50; // 5 seconds
+    let retries = 0;
+    while (!(window as any).loadPyodide && retries < maxRetries) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      retries++;
+    }
+
+    if (!(window as any).loadPyodide) {
+      const errorMsg = 'Failed to load Pyodide. Please check your internet connection and reload.';
+      setConsoleLogs((prev) => [...prev, { text: errorMsg, severity: 'stderr' }]);
+      throw new Error(errorMsg);
+    }
+
+    if (!pyodide) {
       try {
         setConsoleLogs((prev) => [...prev, { text: 'Initializing Python Runner...', severity: 'system' }]);
         const py = await (window as any).loadPyodide({
@@ -130,13 +160,16 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
         setPyodide(py);
         setPyodideLoaded(true);
         setConsoleLogs((prev) => [...prev, { text: 'Python environment loaded successfully.', severity: 'system' }]);
+        return py;
       } catch (err: any) {
         setConsoleLogs((prev) => [
           ...prev,
           { text: `Failed to load Python: ${err.message}`, severity: 'stderr' },
         ]);
+        throw err;
       }
     }
+    return pyodide;
   };
 
   // Compile standard HTML preview
@@ -309,27 +342,40 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
     setConsoleLogs([]);
 
     if (challenge.language === 'python') {
-      if (!pyodide) {
-        await initPyodide();
+      let pyInstance = pyodide;
+      if (!pyInstance) {
+        try {
+          pyInstance = await initPyodide();
+        } catch (err: any) {
+          setConsoleLogs((prev) => [...prev, { text: `Error: Python runner is not ready. ${err.message}`, severity: 'stderr' }]);
+          setRunning(false);
+          return;
+        }
+      }
+
+      if (!pyInstance) {
+        setConsoleLogs((prev) => [...prev, { text: 'Error: Python runner is not ready. Please try again.', severity: 'stderr' }]);
+        setRunning(false);
+        return;
       }
 
       try {
         setConsoleLogs((prev) => [...prev, { text: 'Running python script...', severity: 'system' }]);
         
         let localStdout = '';
-        pyodide.setStdout({
+        pyInstance.setStdout({
           batched: (text: string) => {
             localStdout += text + '\n';
             setConsoleLogs((prev) => [...prev, { text, severity: 'stdout' }]);
           },
         });
-        pyodide.setStderr({
+        pyInstance.setStderr({
           batched: (text: string) => {
             setConsoleLogs((prev) => [...prev, { text, severity: 'stderr' }]);
           },
         });
 
-        await pyodide.runPythonAsync(code);
+        await pyInstance.runPythonAsync(code);
         setConsoleLogs((prev) => [...prev, { text: 'Process finished successfully.', severity: 'system' }]);
       } catch (err: any) {
         setConsoleLogs((prev) => [...prev, { text: err.message, severity: 'stderr' }]);
@@ -364,20 +410,33 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
     }
 
     if (challenge.language === 'python') {
-      if (!pyodide) {
-        await initPyodide();
+      let pyInstance = pyodide;
+      if (!pyInstance) {
+        try {
+          pyInstance = await initPyodide();
+        } catch (err: any) {
+          setConsoleLogs((prev) => [...prev, { text: `Error: Python runner is not ready. ${err.message}`, severity: 'stderr' }]);
+          setValidating(false);
+          return;
+        }
+      }
+
+      if (!pyInstance) {
+        setConsoleLogs((prev) => [...prev, { text: 'Error: Python runner is not ready. Please try again.', severity: 'stderr' }]);
+        setValidating(false);
+        return;
       }
 
       setConsoleLogs((prev) => [...prev, { text: 'Running behavioral check assertions...', severity: 'system' }]);
       
       let localStdout = '';
-      pyodide.setStdout({
+      pyInstance.setStdout({
         batched: (text: string) => {
           localStdout += text + '\n';
           setConsoleLogs((prev) => [...prev, { text, severity: 'stdout' }]);
         },
       });
-      pyodide.setStderr({
+      pyInstance.setStderr({
         batched: (text: string) => {
           setConsoleLogs((prev) => [...prev, { text, severity: 'stderr' }]);
         },
@@ -385,7 +444,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
 
       // 1. Run student script first
       try {
-        await pyodide.runPythonAsync(code);
+        await pyInstance.runPythonAsync(code);
       } catch (err: any) {
         setConsoleLogs((prev) => [
           ...prev,
@@ -402,8 +461,8 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
       for (const rule of challenge.validationRules) {
         try {
           // Set stdout log variable inside python for checks
-          pyodide.globals.set('__output__', localStdout);
-          await pyodide.runPythonAsync(rule.checkFn);
+          pyInstance.globals.set('__output__', localStdout);
+          await pyInstance.runPythonAsync(rule.checkFn);
           
           updatedStatuses[rule.id] = { id: rule.id, passed: true, error: null };
         } catch (err: any) {
@@ -432,11 +491,58 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
     }
   };
 
+  const handleSkipChallenge = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Skip Challenge',
+      message: 'Are you sure you want to skip this challenge? This will unlock the next step but you will not earn any XP for this challenge.',
+      onConfirm: executeSkipChallenge,
+    });
+  };
+
+  const executeSkipChallenge = async () => {
+    if (!challenge) return;
+    setSkipping(true);
+    try {
+      setConsoleLogs((prev) => [...prev, { text: 'Skipping challenge...', severity: 'system' }]);
+      const res = await fetch(`/api/labs/challenges/${challengeId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, skip: true }),
+      });
+      if (res.ok) {
+        setSolved(true);
+        await refetchProgress();
+        setConsoleLogs((prev) => [...prev, { text: 'Challenge skipped.', severity: 'system' }]);
+        
+        if (challenge.nextChallengeId) {
+          router.push(`/challenge/${challenge.nextChallengeId}`);
+        } else {
+          router.push('/labs');
+        }
+      } else {
+        setConsoleLogs((prev) => [...prev, { text: 'Failed to skip challenge.', severity: 'stderr' }]);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setConsoleLogs((prev) => [...prev, { text: `Error: ${err.message}`, severity: 'stderr' }]);
+    } finally {
+      setSkipping(false);
+    }
+  };
+
   // Reset Code logic
   const handleResetCode = () => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Reset Template',
+      message: 'Are you sure you want to reset the editor to the starter template?',
+      onConfirm: executeResetCode,
+    });
+  };
+
+  const executeResetCode = () => {
     if (!challenge) return;
-    if (!confirm('Are you sure you want to reset the editor to the starter template?')) return;
-    
     setCode(challenge.starterCode);
     localStorage.removeItem(`challenge_code_${challenge._id}`);
     
@@ -459,12 +565,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   };
 
   if (loading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <span className="mt-4 text-sm text-muted-foreground">Loading workspace details...</span>
-      </div>
-    );
+    return <LoadingScreen message="Loading workspace details..." />;
   }
 
   if (!challenge) {
@@ -626,7 +727,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
                         {copiedSolution ? 'Copied' : 'Copy Solution'}
                       </button>
                     </div>
-                    <pre className="text-xs font-mono p-3 bg-black/40 rounded-lg overflow-x-auto text-amber-500/90 whitespace-pre-wrap">
+                    <pre className="text-xs font-mono p-3 rounded-lg overflow-x-auto whitespace-pre-wrap bg-zinc-100 border border-zinc-200 text-amber-700 dark:bg-zinc-950 dark:border-zinc-800 dark:text-amber-400">
                       {challenge.solution}
                     </pre>
                   </div>
@@ -645,7 +746,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
         </div>
 
         {/* Right Pane: Code Editor + Preview/Console */}
-        <div className="flex flex-col h-full overflow-hidden bg-[#1e1e1e]">
+        <div className={`flex flex-col h-full overflow-hidden ${theme === 'dark' ? 'bg-[#1e1e1e]' : 'bg-white'}`}>
           
           {/* Top Half: Code Editor */}
           <div className="flex-1 min-h-[40%] flex flex-col p-4 pb-2">
@@ -698,7 +799,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
             </div>
 
             {/* Content areas */}
-            <div className="flex-1 min-h-0 bg-black/40 rounded-xl overflow-hidden border border-border/20">
+            <div className={`flex-1 min-h-0 rounded-xl overflow-hidden border border-border/20 ${theme === 'dark' ? 'bg-black/40' : 'bg-neutral-50'}`}>
               {activeRightTab === 'preview' && challenge.language !== 'python' ? (
                 <iframe
                   ref={iframeRef}
@@ -709,13 +810,13 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
                 />
               ) : (
                 /* Console Output Terminal */
-                <div className="w-full h-full p-4 overflow-y-auto font-mono text-xs space-y-1 bg-[#0f0f0f] text-neutral-200">
+                <div className={`w-full h-full p-4 overflow-y-auto font-mono text-xs space-y-1 ${theme === 'dark' ? 'bg-[#0f0f0f] text-neutral-200' : 'bg-white text-neutral-800'}`}>
                   {consoleLogs.length === 0 ? (
                     <span className="text-muted-foreground/60 italic">Console is quiet. Click 'Run' to see outputs.</span>
                   ) : (
                     consoleLogs.map((log, idx) => {
                       const colors = {
-                        stdout: 'text-neutral-200',
+                        stdout: theme === 'dark' ? 'text-neutral-200' : 'text-neutral-800',
                         stderr: 'text-rose-500 font-bold',
                         system: 'text-amber-500/90 italic font-semibold',
                       }[log.severity];
@@ -746,7 +847,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
         <div className="flex items-center gap-3">
           <button
             onClick={handleRunCode}
-            disabled={running || validating}
+            disabled={running || validating || skipping}
             className="inline-flex items-center gap-2 rounded-lg border border-border/60 hover:bg-muted/40 text-foreground px-5 py-2.5 text-xs font-bold transition-colors disabled:opacity-50"
           >
             <Play className="h-3.5 w-3.5 text-emerald-500" />
@@ -754,8 +855,17 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
           </button>
 
           <button
+            onClick={handleSkipChallenge}
+            disabled={solved || skipping || validating || running}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 hover:bg-muted/40 text-foreground px-5 py-2.5 text-xs font-bold transition-colors disabled:opacity-50"
+          >
+            <ChevronRight className="h-3.5 w-3.5 text-amber-500" />
+            {skipping ? 'Skipping...' : 'Skip Challenge'}
+          </button>
+
+          <button
             onClick={handleValidateCode}
-            disabled={validating || running}
+            disabled={validating || running || skipping}
             className="inline-flex items-center gap-2 rounded-lg bg-primary hover:opacity-90 text-primary-foreground px-5 py-2.5 text-xs font-bold transition-all disabled:opacity-50"
           >
             <Sparkles className="h-3.5 w-3.5 text-amber-500" />
@@ -774,6 +884,40 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
           )}
         </div>
       </div>
+
+      {/* Custom Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-6 mx-4 transform scale-100 transition-all">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-foreground">
+                {confirmModal.title}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {confirmModal.message}
+              </p>
+            </div>
+            
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 text-xs font-bold rounded-lg border border-border hover:bg-muted/40 transition-colors text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  confirmModal.onConfirm();
+                }}
+                className="px-4 py-2 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+              >
+                Yes, Proceed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
