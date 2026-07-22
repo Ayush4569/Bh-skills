@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Trophy, Flag, Shield, Compass, Zap, Flame, Award, Lock, CheckCircle2 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
 import { LoadingScreen } from '@/components/loader';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Flag: Flag,
@@ -41,7 +43,7 @@ export default function AchievementsPage() {
         </p>
 
         {/* Progress summary bar */}
-        <div className="rounded-2xl border border-border/40 bg-card p-5 mt-6 text-left max-w-xl mx-auto space-y-3">
+        <Card className="p-5 mt-6 text-left max-w-xl mx-auto space-y-3">
           <div className="flex justify-between items-center text-xs font-bold">
             <span className="text-muted-foreground">Prestige Progress</span>
             <span className="text-foreground">
@@ -54,7 +56,7 @@ export default function AchievementsPage() {
               className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 rounded-full transition-all duration-800"
             />
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Badges Grid */}
@@ -69,48 +71,55 @@ export default function AchievementsPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: idx * 0.05 }}
-              className={`group relative rounded-2xl border p-6 flex flex-col justify-between transition-all ${
-                unlocked
-                  ? 'border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.03)] hover:border-emerald-500/30'
-                  : 'border-border/50 bg-card/60'
-              }`}
             >
-              <div className="space-y-4">
-                {/* Badge Icon circle */}
-                <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105 ${
-                    unlocked
-                      ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500'
-                      : 'bg-muted/50 border-border/40 text-muted-foreground/50'
-                  }`}
-                >
+              <Card
+                className={`group h-full p-6 flex flex-col justify-between transition-all ${
+                  unlocked
+                    ? 'border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.03)] hover:border-emerald-500/30'
+                    : 'border-border/50 bg-card/60'
+                }`}
+              >
+                <div className="space-y-4">
+                  {/* Badge Icon circle */}
+                  <div
+                    className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105 ${
+                      unlocked
+                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500'
+                        : 'bg-muted/50 border-border/40 text-muted-foreground/50'
+                    }`}
+                  >
+                    {unlocked ? (
+                      <Icon className="h-7 w-7" />
+                    ) : (
+                      <Lock className="h-6 w-6 text-muted-foreground/45" />
+                    )}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <CardTitle className="text-lg font-bold flex items-center gap-1.5">
+                      {ach.title}
+                      {unlocked && (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                      )}
+                    </CardTitle>
+                    <CardDescription className="text-xs text-muted-foreground leading-relaxed">
+                      {ach.description}
+                    </CardDescription>
+                  </div>
+                </div>
+
+                {/* Requirement badge */}
+                <div className="mt-6 pt-4 border-t border-border/30 flex items-center justify-between text-xs font-semibold">
+                  <span className="text-muted-foreground">Milestone</span>
                   {unlocked ? (
-                    <Icon className="h-7 w-7" />
+                    <Badge variant="success" className="text-[10px] font-bold uppercase">Unlocked</Badge>
                   ) : (
-                    <Lock className="h-6 w-6 text-muted-foreground/45" />
+                    <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                      {ach.xpRequired} XP required
+                    </Badge>
                   )}
                 </div>
-
-                <div className="space-y-1.5">
-                  <h3 className="text-lg font-bold flex items-center gap-1.5">
-                    {ach.title}
-                    {unlocked && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                    )}
-                  </h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {ach.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Requirement badge */}
-              <div className="mt-6 pt-4 border-t border-border/30 flex items-center justify-between text-xs font-semibold">
-                <span className="text-muted-foreground">Milestone</span>
-                <span className={unlocked ? 'text-emerald-500' : 'text-foreground'}>
-                  {ach.xpRequired} XP required
-                </span>
-              </div>
+              </Card>
             </motion.div>
           );
         })}

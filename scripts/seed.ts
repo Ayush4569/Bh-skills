@@ -446,6 +446,46 @@ async function seed() {
     published: true,
   }));
 
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule3._id,
+    title: 'Build Portfolio Website',
+    description: `### Final Project: Build Portfolio Website\n\nCreate a personal portfolio layout using all your HTML knowledge. It must contain the following structural and content elements:\n\n1. A main heading \`<h1>\` with your name.\n2. An ID-targeted paragraph \`<p id="bio">\` with a brief bio description.\n3. An unordered list \`<ul>\` with class \`skills-list\` containing at least three \`<li>\` elements listing your developer skills.\n4. A contact form containing an \`<input id="contact-email" type="email">\` and a \`<textarea id="contact-msg">\`.\n5. An anchor link pointing to your github profile page \`https://github.com\` with target \`_blank\`.\n\n### Objective\nAssemble your profile page containing headings, paragraph tags, unordered lists, input forms, textareas, and hyperlinks.`,
+    language: 'html',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<!-- Write your HTML portfolio code below -->\n`,
+    solution: `<h1>John Doe</h1>\n<p id="bio">Passionate web developer building clean user interfaces.</p>\n<ul class="skills-list">\n  <li>HTML</li>\n  <li>CSS</li>\n  <li>JavaScript</li>\n</ul>\n<form>\n  <input id="contact-email" type="email" placeholder="Your Email" />\n  <textarea id="contact-msg" placeholder="Your Message"></textarea>\n</form>\n<a href="https://github.com" target="_blank">My GitHub</a>`,
+    validationRules: [
+      {
+        id: 'h1_exists',
+        description: 'Verify that an <h1> element exists.',
+        checkFn: `document.querySelector('h1') !== null`,
+      },
+      {
+        id: 'bio_exists',
+        description: 'Verify that a paragraph <p id="bio"> exists.',
+        checkFn: `document.querySelector('p#bio') !== null`,
+      },
+      {
+        id: 'skills_exist',
+        description: 'Verify that an unordered list <ul class="skills-list"> has at least 3 <li> list items.',
+        checkFn: `document.querySelectorAll('ul.skills-list > li').length >= 3`,
+      },
+      {
+        id: 'form_fields',
+        description: 'Verify input email and textarea message elements are present with correct IDs.',
+        checkFn: `document.querySelector('input#contact-email[type="email"]') !== null && document.querySelector('textarea#contact-msg') !== null`,
+      },
+      {
+        id: 'link_exists',
+        description: 'Verify anchor link pointing to https://github.com opens in a new tab.',
+        checkFn: `document.querySelector('a[href="https://github.com"][target="_blank"]') !== null`,
+      },
+    ],
+    hints: ['Wrap list items inside a ul element with class="skills-list".', 'Ensure input and textarea elements have the correct id attributes.', 'Make sure the anchor link target is set to "_blank".'],
+    published: true,
+  }));
+
   // ----------------------------------------------------
   // CSS Basics Challenges (11 to 20)
   // ----------------------------------------------------
@@ -534,6 +574,50 @@ async function seed() {
   }));
 
   cssChallenges.push(await Challenge.create({
+    moduleId: cssModule1._id,
+    title: 'Pricing Card',
+    description: `### Final Project: Pricing Card\n\nBuild a styled pricing card component to practice styling, widths, backgrounds, paddings, margins, and borders.\n\n### Objective\nStyle the pricing card and its inner content to match the design requirements:\n1. A card container \`#pricing-card\` with background color \`rgb(30, 41, 59)\`, border radius \`16px\`, width \`300px\`, padding \`30px\`, and margin centered using \`auto\`.\n2. A heading \`#plan-name\` styled with text color \`rgb(244, 63, 94)\` and centered text alignment.\n3. A price text \`#plan-price\` with font size \`36px\`, bold font weight, and centered text alignment.\n4. A list of features inside \`.features\` with white text color \`rgb(255, 255, 255)\` and padding top \`20px\`.`,
+    language: 'css',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<style>\n  #pricing-card {\n    /* Style here */\n  }\n  #plan-name {\n    /* Style here */\n  }\n  #plan-price {\n    /* Style here */\n  }\n  .features {\n    /* Style here */\n  }\n</style>\n<div id="pricing-card">\n  <h2 id="plan-name">Pro Plan</h2>\n  <div id="plan-price">$19/mo</div>\n  <ul class="features">\n    <li>Unlimited Access</li>\n    <li>Dedicated Support</li>\n    <li>Source Code Access</li>\n  </ul>\n</div>`,
+    solution: `<style>\n  #pricing-card {\n    background-color: rgb(30, 41, 59);\n    border-radius: 16px;\n    width: 300px;\n    padding: 30px;\n    margin: auto;\n  }\n  #plan-name {\n    color: rgb(244, 63, 94);\n    text-align: center;\n  }\n  #plan-price {\n    font-size: 36px;\n    font-weight: bold;\n    text-align: center;\n  }\n  .features {\n    color: rgb(255, 255, 255);\n    padding-top: 20px;\n  }\n</style>\n<div id="pricing-card">\n  <h2 id="plan-name">Pro Plan</h2>\n  <div id="plan-price">$19/mo</div>\n  <ul class="features">\n    <li>Unlimited Access</li>\n    <li>Dedicated Support</li>\n    <li>Source Code Access</li>\n  </ul>\n</div>`,
+    validationRules: [
+      {
+        id: 'card_exists',
+        description: 'Verify #pricing-card element exists.',
+        checkFn: `document.getElementById('pricing-card') !== null`,
+      },
+      {
+        id: 'card_styles',
+        description: 'Verify #pricing-card styles (bg-color: rgb(30, 41, 59), width: 300px, padding: 30px, border-radius: 16px).',
+        checkFn: `(() => {
+          const s = window.getComputedStyle(document.getElementById('pricing-card'));
+          return s.backgroundColor === 'rgb(30, 41, 59)' && s.borderRadius === '16px' && s.width === '300px' && s.padding === '30px';
+        })()`,
+      },
+      {
+        id: 'name_styles',
+        description: 'Verify plan name is centered with color rgb(244, 63, 94).',
+        checkFn: `(() => {
+          const s = window.getComputedStyle(document.getElementById('plan-name'));
+          return s.color === 'rgb(244, 63, 94)' && s.textAlign === 'center';
+        })()`,
+      },
+      {
+        id: 'price_styles',
+        description: 'Verify price has font-size 36px, bold font-weight, and is centered.',
+        checkFn: `(() => {
+          const s = window.getComputedStyle(document.getElementById('plan-price'));
+          return s.fontSize === '36px' && (s.fontWeight === 'bold' || s.fontWeight === '700') && s.textAlign === 'center';
+        })()`,
+      },
+    ],
+    hints: ['Set the ID styling selectors using `#` followed by the element ID.', 'Ensure spelling of hex or rgb colors is exactly correct.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
     moduleId: cssModule2._id,
     title: 'Font Styling',
     description: `### CSS Typography\n\nTypography properties control sizing (\`font-size\`), weights (\`font-weight\`), and color values.\n\n### Objective\nStyle the paragraph with ID \`styled-text\` to have font-size \`24px\`, font-weight \`bold\`, and color set to blue (\`rgb(59, 130, 246)\`).`,
@@ -613,6 +697,61 @@ async function seed() {
       },
     ],
     hints: ['Add properties: `text-align: center; text-transform: uppercase;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule2._id,
+    title: 'Dashboard',
+    description: `### Final Project: Dashboard\n\nDesign a mini analytics dashboard layout with layout cells, stats cards, and typography.\n\n### Objective\nStyle the layout elements to create a sleek dashboard component:\n1. A flex or grid container \`#dashboard-grid\` with a gap of \`20px\`.\n2. Three stats cards with class \`.stat-card\` inside, each having background color \`rgb(15, 23, 42)\`, border radius \`12px\`, padding \`20px\`, and text color white (\`rgb(255, 255, 255)\`).\n3. Inside each \`.stat-card\`, a label with class \`.stat-label\` styled to have font size \`12px\` and text transform set to \`uppercase\`.\n4. A main number display with class \`.stat-value\` styled with font size \`28px\` and bold font weight.`,
+    language: 'css',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<style>\n  #dashboard-grid {\n    /* Layout styling */\n  }\n  .stat-card {\n    /* Style here */\n  }\n  .stat-label {\n    /* Style here */\n  }\n  .stat-value {\n    /* Style here */\n  }\n</style>\n<div id="dashboard-grid">\n  <div class="stat-card">\n    <div class="stat-label">Active Users</div>\n    <div class="stat-value">1,240</div>\n  </div>\n  <div class="stat-card">\n    <div class="stat-label">Total Revenue</div>\n    <div class="stat-value">$14,230</div>\n  </div>\n  <div class="stat-card">\n    <div class="stat-label">Open Issues</div>\n    <div class="stat-value">18</div>\n  </div>\n</div>`,
+    solution: `<style>\n  #dashboard-grid {\n    display: flex;\n    gap: 20px;\n  }\n  .stat-card {\n    background-color: rgb(15, 23, 42);\n    border-radius: 12px;\n    padding: 20px;\n    color: rgb(255, 255, 255);\n    flex: 1;\n  }\n  .stat-label {\n    font-size: 12px;\n    text-transform: uppercase;\n  }\n  .stat-value {\n    font-size: 28px;\n    font-weight: bold;\n  }\n</style>\n<div id="dashboard-grid">\n  <div class="stat-card">\n    <div class="stat-label">Active Users</div>\n    <div class="stat-value">1,240</div>\n  </div>\n  <div class="stat-card">\n    <div class="stat-label">Total Revenue</div>\n    <div class="stat-value">$14,230</div>\n  </div>\n  <div class="stat-card">\n    <div class="stat-label">Open Issues</div>\n    <div class="stat-value">18</div>\n  </div>\n</div>`,
+    validationRules: [
+      {
+        id: 'grid_exists',
+        description: 'Verify #dashboard-grid container exists.',
+        checkFn: `document.getElementById('dashboard-grid') !== null`,
+      },
+      {
+        id: 'card_count',
+        description: 'Verify there are exactly 3 stat cards.',
+        checkFn: `document.querySelectorAll('.stat-card').length === 3`,
+      },
+      {
+        id: 'card_styles',
+        description: 'Verify .stat-card has background color rgb(15, 23, 42), border-radius 12px, padding 20px, and white text.',
+        checkFn: `(() => {
+          const card = document.querySelector('.stat-card');
+          if (!card) return false;
+          const s = window.getComputedStyle(card);
+          return s.backgroundColor === 'rgb(15, 23, 42)' && s.borderRadius === '12px' && s.padding === '20px' && s.color === 'rgb(255, 255, 255)';
+        })()`,
+      },
+      {
+        id: 'label_styles',
+        description: 'Verify .stat-label has font-size 12px and text-transform uppercase.',
+        checkFn: `(() => {
+          const label = document.querySelector('.stat-label');
+          if (!label) return false;
+          const s = window.getComputedStyle(label);
+          return s.fontSize === '12px' && s.textTransform === 'uppercase';
+        })()`,
+      },
+      {
+        id: 'value_styles',
+        description: 'Verify .stat-value has font-size 28px and bold font-weight.',
+        checkFn: `(() => {
+          const val = document.querySelector('.stat-value');
+          if (!val) return false;
+          const s = window.getComputedStyle(val);
+          return s.fontSize === '28px' && (s.fontWeight === 'bold' || s.fontWeight === '700');
+        })()`,
+      },
+    ],
+    hints: ['Use `display: flex; gap: 20px;` to align the stat cards.', 'Apply CSS properties inside selector blocks matching `.stat-card`, `.stat-label`, and `.stat-value`.'],
     published: true,
   }));
 
@@ -720,6 +859,51 @@ async function seed() {
     published: true,
   }));
 
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule3._id,
+    title: 'Landing Page',
+    description: `### Final Project: Landing Page\n\nBuild a responsive marketing landing page hero section with absolute elements, hover transitions, and dark background gradients.\n\n### Objective\nAssemble a hero layout section using absolute positioning, shadow styling, and micro-interaction states:\n1. Container \`.hero-section\` with relative position, height \`400px\`, background color \`rgb(9, 9, 11)\`.\n2. A call-to-action button \`.cta-btn\` centered with border radius \`8px\`, transition \`transform 0.2s ease\`, and on hover scale up by \`scale(1.05)\`.\n3. A decorative absolute element \`.decor-circle\` positioned at \`top: 20px\`, \`right: 20px\` with width and height of \`80px\`, border-radius \`50%\`, and box-shadow set to \`0px 0px 20px rgba(99, 102, 241, 0.5)\`.`,
+    language: 'css',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<style>\n  .hero-section {\n    /* Base hero section style */\n  }\n  .decor-circle {\n    /* Absolute positioned circle */\n  }\n  .cta-btn {\n    /* Button styles & transitions */\n  }\n  .cta-btn:hover {\n    /* Scale on hover */\n  }\n</style>\n<div class="hero-section">\n  <div class="decor-circle"></div>\n  <h1>Build The Future</h1>\n  <p>Learn coding step by step on Brainheaters Labs.</p>\n  <button class="cta-btn">Get Started</button>\n</div>`,
+    solution: `<style>\n  .hero-section {\n    position: relative;\n    height: 400px;\n    background-color: rgb(9, 9, 11);\n    color: white;\n    padding: 60px;\n  }\n  .decor-circle {\n    position: absolute;\n    top: 20px;\n    right: 20px;\n    width: 80px;\n    height: 80px;\n    border-radius: 50%;\n    background-color: rgb(99, 102, 241);\n    box-shadow: 0px 0px 20px rgba(99, 102, 241, 0.5);\n  }\n  .cta-btn {\n    border-radius: 8px;\n    padding: 12px 24px;\n    background-color: rgb(99, 102, 241);\n    color: white;\n    border: none;\n    cursor: pointer;\n    transition: transform 0.2s ease;\n  }\n  .cta-btn:hover {\n    transform: scale(1.05);\n  }\n</style>\n<div class="hero-section">\n  <div class="decor-circle"></div>\n  <h1>Build The Future</h1>\n  <p>Learn coding step by step on Brainheaters Labs.</p>\n  <button class="cta-btn">Get Started</button>\n</div>`,
+    validationRules: [
+      {
+        id: 'hero_exists',
+        description: 'Verify .hero-section exists.',
+        checkFn: `document.querySelector('.hero-section') !== null`,
+      },
+      {
+        id: 'hero_relative',
+        description: 'Verify .hero-section is styled with relative positioning.',
+        checkFn: `window.getComputedStyle(document.querySelector('.hero-section')).position === 'relative'`,
+      },
+      {
+        id: 'circle_absolute',
+        description: 'Verify decorative circle is styled with absolute positioning, top 20px, right 20px, width 80px, and border-radius 50%.',
+        checkFn: `(() => {
+          const el = document.querySelector('.decor-circle');
+          if (!el) return false;
+          const s = window.getComputedStyle(el);
+          return s.position === 'absolute' && s.top === '20px' && s.right === '20px' && s.width === '80px' && s.borderRadius === '50%';
+        })()`,
+      },
+      {
+        id: 'cta_btn_transition',
+        description: 'Verify CTA button is styled with border-radius 8px and transform transition.',
+        checkFn: `(() => {
+          const el = document.querySelector('.cta-btn');
+          if (!el) return false;
+          const s = window.getComputedStyle(el);
+          return s.borderRadius === '8px' && s.transitionProperty.includes('transform');
+        })()`,
+      },
+    ],
+    hints: ['Declare `position: absolute;` on `.decor-circle` so it positions relative to the hero container.', 'Write transition properties as: `transition: transform 0.2s ease;`.'],
+    published: true,
+  }));
+
   // ----------------------------------------------------
   // JavaScript Basics Challenges (21 to 30)
   // ----------------------------------------------------
@@ -815,6 +999,45 @@ async function seed() {
   }));
 
   jsChallenges.push(await Challenge.create({
+    moduleId: jsModule1._id,
+    title: 'Calculator',
+    description: `### Final Project: Calculator\n\nBuild a fully functioning interactive calculator widget.\n\n### Objective\nCreate an interactive calculator:\n1. Two inputs \`#num1\` and \`#num2\` (type number).\n2. Four action buttons: \`#btn-add\` (+), \`#btn-sub\` (-), \`#btn-mul\` (*), and \`#btn-div\` (/).\n3. A result paragraph \`#result\` that displays the calculated result when any math button is clicked.`,
+    language: 'javascript',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<input id="num1" type="number" value="10" />\n<input id="num2" type="number" value="5" />\n<button id="btn-add">+</button>\n<button id="btn-sub">-</button>\n<button id="btn-mul">*</button>\n<button id="btn-div">/</button>\n<p id="result">Result will appear here</p>\n<script>\n  // Add operation handlers here\n</script>`,
+    solution: `<input id="num1" type="number" value="10" />\n<input id="num2" type="number" value="5" />\n<button id="btn-add">+</button>\n<button id="btn-sub">-</button>\n<button id="btn-mul">*</button>\n<button id="btn-div">/</button>\n<p id="result">Result will appear here</p>\n<script>\n  const n1 = document.getElementById('num1');\n  const n2 = document.getElementById('num2');\n  const res = document.getElementById('result');\n  document.getElementById('btn-add').addEventListener('click', () => {\n    res.textContent = String(parseFloat(n1.value) + parseFloat(n2.value));\n  });\n  document.getElementById('btn-sub').addEventListener('click', () => {\n    res.textContent = String(parseFloat(n1.value) - parseFloat(n2.value));\n  });\n  document.getElementById('btn-mul').addEventListener('click', () => {\n    res.textContent = String(parseFloat(n1.value) * parseFloat(n2.value));\n  });\n  document.getElementById('btn-div').addEventListener('click', () => {\n    res.textContent = String(parseFloat(n1.value) / parseFloat(n2.value));\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'calc_exists',
+        description: 'Verify input elements and result elements exist.',
+        checkFn: `document.getElementById('num1') !== null && document.getElementById('result') !== null`,
+      },
+      {
+        id: 'operations',
+        description: 'Verify addition, subtraction, multiplication, and division button clicks update #result correctly.',
+        checkFn: `(() => {
+          const n1 = document.getElementById('num1');
+          const n2 = document.getElementById('num2');
+          const res = document.getElementById('result');
+          n1.value = '12';
+          n2.value = '4';
+          document.getElementById('btn-add').click();
+          if (res.textContent.trim() !== '16') return false;
+          document.getElementById('btn-sub').click();
+          if (res.textContent.trim() !== '8') return false;
+          document.getElementById('btn-mul').click();
+          if (res.textContent.trim() !== '48') return false;
+          document.getElementById('btn-div').click();
+          return res.textContent.trim() === '3' || res.textContent.trim() === '3.0';
+        })()`,
+      },
+    ],
+    hints: ['Parse user inputs with \`parseFloat()\` or \`Number()\` inside your click event handlers.', 'Assign the computed result as a string to \`result.textContent\`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
     moduleId: jsModule2._id,
     title: 'Show and Hide Modal',
     description: `### Toggling visibility\n\nToggle element displays between \`none\` and visible blocks using element inline styles.\n\n### Objective\nToggle modal div \`#modal\` visibility (between display \`none\` and display \`block\`) when clicking \`#toggle-btn\`.`,
@@ -895,6 +1118,63 @@ async function seed() {
       },
     ],
     hints: ['Parse input value using `parseFloat`, calculate temperature in Fahrenheit, and store as string.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule2._id,
+    title: 'Quiz App',
+    description: `### Final Project: Quiz App\n\nBuild a simple quiz widget that counts correct answers.\n\n### Objective\nCreate an interactive quiz question:\n1. A single-choice radio button answer container with inputs matching \`name="answer"\`. The correct answer choice is \`Paris\`.\n2. A button \`#submit-quiz\` that validates the user's selection on click.\n3. A feedback paragraph \`#quiz-feedback\` that outputs the selection outcome:\n   - If no option is selected: \`Please select an answer\`\n   - If correct option selected: \`Correct!\`\n   - If incorrect option selected: \`Incorrect, try again!\``,
+    language: 'javascript',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<p>What is the capital of France?</p>\n<label><input type="radio" name="answer" value="London" /> London</label>\n<label><input type="radio" name="answer" value="Paris" /> Paris</label>\n<label><input type="radio" name="answer" value="Rome" /> Rome</label>\n<button id="submit-quiz">Submit</button>\n<p id="quiz-feedback"></p>\n<script>\n  // Add checking logic here\n</script>`,
+    solution: `<p>What is the capital of France?</p>\n<label><input type="radio" name="answer" value="London" /> London</label>\n<label><input type="radio" name="answer" value="Paris" /> Paris</label>\n<label><input type="radio" name="answer" value="Rome" /> Rome</label>\n<button id="submit-quiz">Submit</button>\n<p id="quiz-feedback"></p>\n<script>\n  const btn = document.getElementById('submit-quiz');\n  const fb = document.getElementById('quiz-feedback');\n  btn.addEventListener('click', () => {\n    const selected = document.querySelector('input[name="answer"]:checked');\n    if (!selected) {\n      fb.textContent = 'Please select an answer';\n      return;\n    }\n    if (selected.value === 'Paris') {\n      fb.textContent = 'Correct!';\n    } else {\n      fb.textContent = 'Incorrect, try again!';\n    }\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'quiz_elements',
+        description: 'Verify submit button and feedback paragraph exist.',
+        checkFn: `document.getElementById('submit-quiz') !== null && document.getElementById('quiz-feedback') !== null`,
+      },
+      {
+        id: 'empty_submission',
+        description: 'Verify feedback shows "Please select an answer" if no radio button is selected on submit click.',
+        checkFn: `(() => {
+          const fb = document.getElementById('quiz-feedback');
+          const btn = document.getElementById('submit-quiz');
+          document.querySelectorAll('input[name="answer"]').forEach(r => r.checked = false);
+          btn.click();
+          return fb.textContent.trim() === 'Please select an answer';
+        })()`,
+      },
+      {
+        id: 'correct_submission',
+        description: 'Verify selecting "Paris" and clicking submit displays "Correct!".',
+        checkFn: `(() => {
+          const fb = document.getElementById('quiz-feedback');
+          const btn = document.getElementById('submit-quiz');
+          const correct = document.querySelector('input[name="answer"][value="Paris"]');
+          if (!correct) return false;
+          correct.checked = true;
+          btn.click();
+          return fb.textContent.trim() === 'Correct!';
+        })()`,
+      },
+      {
+        id: 'incorrect_submission',
+        description: 'Verify selecting wrong answer displays "Incorrect, try again!".',
+        checkFn: `(() => {
+          const fb = document.getElementById('quiz-feedback');
+          const btn = document.getElementById('submit-quiz');
+          const wrong = document.querySelector('input[name="answer"][value="London"]');
+          if (!wrong) return false;
+          wrong.checked = true;
+          btn.click();
+          return fb.textContent.trim() === 'Incorrect, try again!';
+        })()`,
+      },
+    ],
+    hints: ['Check if an element is checked using document.querySelector("input[name=\'answer\']:checked").', 'Compare the checked input value with the target string Paris.'],
     published: true,
   }));
 
@@ -1013,6 +1293,85 @@ async function seed() {
       },
     ],
     hints: ['Access input value on click and call `localStorage.setItem("user_settings", value)`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule3._id,
+    title: 'Todo App',
+    description: `### Final Project: Todo App\n\nBuild a Todo list application featuring adding items, completing items, and resetting items.\n\n### Objective\nCreate an interactive Todo list app:\n1. An input \`#todo-input\` and button \`#add-todo\`.\n2. A list container \`#todo-list\`.\n3. Clicking \`#add-todo\` appends an \`<li>\` item to \`#todo-list\` with the value from \`#todo-input\` (clear input after append).\n4. Inside each \`<li>\`, add a complete button with class \`.complete-btn\`. Clicking this button sets the parent \`<li>\`'s CSS text-decoration to \`line-through\`.`,
+    language: 'javascript',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<input id="todo-input" placeholder="Enter task..." />\n<button id="add-todo">Add Task</button>\n<ul id="todo-list"></ul>\n<script>\n  // Add list operations here\n</script>`,
+    solution: `<input id="todo-input" placeholder="Enter task..." />\n<button id="add-todo">Add Task</button>\n<ul id="todo-list"></ul>\n<script>\n  const input = document.getElementById('todo-input');\n  const btn = document.getElementById('add-todo');\n  const list = document.getElementById('todo-list');\n  btn.addEventListener('click', () => {\n    const text = input.value.trim();\n    if (!text) return;\n    const li = document.createElement('li');\n    li.textContent = text + ' ';\n    const compBtn = document.createElement('button');\n    compBtn.textContent = 'Done';\n    compBtn.className = 'complete-btn';\n    compBtn.addEventListener('click', () => {\n      li.style.textDecoration = 'line-through';\n    });\n    li.appendChild(compBtn);\n    list.appendChild(li);\n    input.value = '';\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'todo_elements',
+        description: 'Verify todo-input input and todo-list list exist.',
+        checkFn: `document.getElementById('todo-input') !== null && document.getElementById('todo-list') !== null`,
+      },
+      {
+        id: 'add_item',
+        description: 'Verify entering a task name and clicking add appends it to the list.',
+        checkFn: `(() => {
+          const input = document.getElementById('todo-input');
+          const btn = document.getElementById('add-todo');
+          const list = document.getElementById('todo-list');
+          list.innerHTML = '';
+          input.value = 'Learn Next.js';
+          btn.click();
+          const lis = list.querySelectorAll('li');
+          return lis.length === 1 && lis[0].textContent.includes('Learn Next.js');
+        })()`,
+      },
+      {
+        id: 'complete_item',
+        description: 'Verify clicking the complete button applies text-decoration line-through to the list item.',
+        checkFn: `(() => {
+          const list = document.getElementById('todo-list');
+          const li = list.querySelector('li');
+          if (!li) return false;
+          const compBtn = li.querySelector('.complete-btn');
+          if (!compBtn) return false;
+          compBtn.click();
+          return li.style.textDecoration === 'line-through';
+        })()`,
+      },
+    ],
+    hints: ['Create an element using \`document.createElement()\` and append it using \`appendChild()\`.', 'Select parent elements of clicked target complete buttons to toggle text-decorations.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule3._id,
+    title: 'Weather App',
+    description: `### Final Project: Weather App\n\nSimulate fetching weather data for a city dynamically.\n\n### Objective\nCreate a mock weather retrieval widget:\n1. Input \`#city-input\` and button \`#get-weather\`.\n2. Output container card \`#weather-result\`.\n3. Clicking the button updates the text content of \`#weather-result\` to read: \`Weather in [city]: Sunny, 24°C\` (where [city] is the trimmed input value).`,
+    language: 'javascript',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `<input id="city-input" placeholder="Enter city..." />\n<button id="get-weather">Get Weather</button>\n<div id="weather-result"></div>\n<script>\n  // Add weather retrieval logic here\n</script>`,
+    solution: `<input id="city-input" placeholder="Enter city..." />\n<button id="get-weather">Get Weather</button>\n<div id="weather-result"></div>\n<script>\n  const inp = document.getElementById('city-input');\n  const btn = document.getElementById('get-weather');\n  const res = document.getElementById('weather-result');\n  btn.addEventListener('click', () => {\n    const city = inp.value.trim();\n    if (!city) return;\n    res.textContent = 'Weather in ' + city + ': Sunny, 24°C';\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'weather_elements',
+        description: 'Verify input city element and weather result card exist.',
+        checkFn: `document.getElementById('city-input') !== null && document.getElementById('weather-result') !== null`,
+      },
+      {
+        id: 'check_weather',
+        description: 'Verify entering "Mumbai" and clicking weather updates output text to "Weather in Mumbai: Sunny, 24°C".',
+        checkFn: `(() => {
+          const inp = document.getElementById('city-input');
+          const btn = document.getElementById('get-weather');
+          const res = document.getElementById('weather-result');
+          inp.value = 'Mumbai';
+          btn.click();
+          return res.textContent.trim() === 'Weather in Mumbai: Sunny, 24°C';
+        })()`,
+      },
+    ],
+    hints: ['Read input value, trim whitespace using \`.trim()\`, and set result textContent matching the specified string.'],
     published: true,
   }));
 
@@ -1230,6 +1589,31 @@ async function seed() {
   }));
 
   pyBasicsChallenges.push(await Challenge.create({
+    moduleId: pyBasicsModule2._id,
+    title: 'Calculator',
+    description: `### Final Project: Calculator\n\nCreate a Python function that performs basic mathematical operations based on user input flags.\n\n### Objective\nDefine function \`calculate(a, b, op)\` returning the calculated result of the operator specified. Supported operations:\n* \`"add"\` -> returns \`a + b\`\n* \`"sub"\` -> returns \`a - b\`\n* \`"mul"\` -> returns \`a * b\`\n* \`"div"\` -> returns \`a / b\` (or returns \`"Error: Division by zero"\` if \`b == 0\`).`,
+    language: 'python',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `def calculate(a, b, op):\n    # Perform calculator operations\n    pass\n\n# Test your function:\nprint("calculate(10, 5, 'add') =", calculate(10, 5, 'add'))\nprint("calculate(10, 0, 'div') =", calculate(10, 0, 'div'))`,
+    solution: `def calculate(a, b, op):\n    if op == 'add':\n        return a + b\n    elif op == 'sub':\n        return a - b\n    elif op == 'mul':\n        return a * b\n    elif op == 'div':\n        if b == 0:\n            return "Error: Division by zero"\n        return a / b\n    return None`,
+    validationRules: [
+      {
+        id: 'calculate_exists',
+        description: 'Verify function calculate must be defined.',
+        checkFn: `assert 'calculate' in globals() and callable(calculate), "Function calculate must be defined"`,
+      },
+      {
+        id: 'calculate_cases',
+        description: 'Verify calculator math results and division by zero exceptions.',
+        checkFn: `assert calculate(6, 3, 'add') == 9 and calculate(6, 3, 'sub') == 3 and calculate(6, 3, 'mul') == 18 and calculate(6, 3, 'div') == 2.0 and calculate(6, 0, 'div') == "Error: Division by zero", "Calculator operations are incorrect"`,
+      },
+    ],
+    hints: ['Check the value of string parameter \`op\` using \`if-elif-else\` blocks.', 'Before dividing \`a / b\`, check if \`b == 0\` and return the correct error string.'],
+    published: true,
+  }));
+
+  pyBasicsChallenges.push(await Challenge.create({
     moduleId: pyBasicsModule3._id,
     title: 'Count Vowels',
     description: `### Character filtering\n\nCheck elements memberships using \`in\` queries.\n\n### Objective\nDefine function \`count_vowels(s)\` that counts vowels (\`a, e, i, o, u\`, case-insensitive) in string \`s\`.`,
@@ -1329,6 +1713,31 @@ async function seed() {
     published: true,
   }));
 
+  pyBasicsChallenges.push(await Challenge.create({
+    moduleId: pyBasicsModule3._id,
+    title: 'Quiz Game',
+    description: `### Final Project: Quiz Game\n\nImplement a trivia quiz function that evaluates answers.\n\n### Objective\nCreate a function \`run_quiz(answers)\` that accepts a dictionary of questions and answers. The keys are the questions, and the values are user answers. If the answers match the official solutions below, count them as correct.\n\nQuestions & Solutions:\n1. \`"What is 5 + 7?"\` -> \`"12"\`\n2. \`"What is the capital of Japan?"\` -> \`"Tokyo"\`\n\nReturn the final score (number of correct answers).`,
+    language: 'python',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `def run_quiz(answers):\n    # Calculate score based on answers dictionary\n    pass\n\n# Test your function:\ntest_answers = {\n    "What is 5 + 7?": "12",\n    "What is the capital of Japan?": "Tokyo"\n}\nprint("Score:", run_quiz(test_answers))`,
+    solution: `def run_quiz(answers):\n    solutions = {\n        "What is 5 + 7?": "12",\n        "What is the capital of Japan?": "Tokyo"\n    }\n    score = 0\n    for q, a in answers.items():\n        if q in solutions and solutions[q].strip().lower() == str(a).strip().lower():\n            score += 1\n    return score`,
+    validationRules: [
+      {
+        id: 'run_quiz_exists',
+        description: 'Verify run_quiz is defined.',
+        checkFn: `assert 'run_quiz' in globals() and callable(run_quiz), "Function run_quiz must be defined"`,
+      },
+      {
+        id: 'quiz_evaluation',
+        description: 'Verify score calculation behaves correctly on mixed capitalization and incorrect answers.',
+        checkFn: `assert run_quiz({"What is 5 + 7?": "12", "What is the capital of Japan?": "Tokyo"}) == 2 and run_quiz({"What is 5 + 7?": "10", "What is the capital of Japan?": "Kyoto"}) == 0 and run_quiz({"What is 5 + 7?": "12", "What is the capital of Japan?": "tokyo"}) == 2, "Quiz scoring logic incorrect"`,
+      },
+    ],
+    hints: ['Define a dictionary mapping question strings to their exact answers.', 'Iterate through \`answers.items()\` and strip/lowercase values to match case-insensitively.'],
+    published: true,
+  }));
+
   // ----------------------------------------------------
   // Python Data Structures & OOP Challenges (11 to 20)
   // ----------------------------------------------------
@@ -1407,6 +1816,31 @@ async function seed() {
       },
     ],
     hints: ['Return a bracketed list comprehension checking if remainder is 0.'],
+    published: true,
+  }));
+
+  pyOopChallenges.push(await Challenge.create({
+    moduleId: pyOopModule1._id,
+    title: 'Password Generator',
+    description: `### Final Project: Password Generator\n\nBuild a simple password generator function that generates passwords of custom length from a seed character set.\n\n### Objective\nDefine function \`generate_password(length, chars)\` that returns a random string of length \`length\` using only characters from \`chars\`. Ensure you import \`random\` or use modular indexing to pick characters.`,
+    language: 'python',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `import random\n\ndef generate_password(length, chars):\n    # Return a random password\n    pass\n\n# Test your function:\nprint("Password:", generate_password(8, "abcdefg12345"))`,
+    solution: `import random\n\ndef generate_password(length, chars):\n    return "".join(random.choice(chars) for _ in range(length))`,
+    validationRules: [
+      {
+        id: 'gen_pass_exists',
+        description: 'Verify generate_password is defined.',
+        checkFn: `assert 'generate_password' in globals() and callable(generate_password), "Function generate_password must be defined"`,
+      },
+      {
+        id: 'gen_pass_checks',
+        description: 'Verify password length and characters match constraints.',
+        checkFn: `p1 = generate_password(10, "XYZ"); assert len(p1) == 10 and all(c in "XYZ" for c in p1), "Password generation logic incorrect"`,
+      },
+    ],
+    hints: ['Use \`random.choice(chars)\` to pick characters.', 'Iterate or use a generator expression inside \`"".join()\` to build the password string.'],
     published: true,
   }));
 
@@ -1582,6 +2016,31 @@ async function seed() {
       },
     ],
     hints: ['Split address by dots, verify exactly 4 parts, convert string parts to digits and verify bounds.'],
+    published: true,
+  }));
+
+  pyOopChallenges.push(await Challenge.create({
+    moduleId: pyOopModule3._id,
+    title: 'Student Manager',
+    description: `### Final Project: Student Manager\n\nCreate a class-based Student Manager tracking name, grades, and average scores.\n\n### Objective\nImplement two classes, \`Student\` and \`StudentManager\`:\n1. Class \`Student\` initialized with \`name\` (str) and a list of grades \`grades\` (list of integers).\n2. Instance method \`get_average()\` that returns the average of student grades (float). If grades are empty, return \`0.0\`.\n3. Class \`StudentManager\` tracking a list of student objects in \`self.students\`. Add methods \`add_student(student)\` to append a student, and \`get_class_average()\` to return the combined average score of all registered students.`,
+    language: 'python',
+    difficulty: 'hard',
+    xp: 120,
+    starterCode: `class Student:\n    # Initialize name and grades list\n    pass\n\nclass StudentManager:\n    # Manage registered student instances\n    pass`,
+    solution: `class Student:\n    def __init__(self, name, grades=None):\n        self.name = name\n        self.grades = grades if grades is not None else []\n    def get_average(self):\n        if not self.grades:\n            return 0.0\n        return sum(self.grades) / len(self.grades)\n\nclass StudentManager:\n    def __init__(self):\n        self.students = []\n    def add_student(self, student):\n        self.students.append(student)\n    def get_class_average(self):\n        if not self.students:\n            return 0.0\n        return sum(s.get_average() for s in self.students) / len(self.students)`,
+    validationRules: [
+      {
+        id: 'oop_classes_exist',
+        description: 'Verify Student and StudentManager classes are defined.',
+        checkFn: `assert 'Student' in globals() and 'StudentManager' in globals(), "Define Student and StudentManager classes"`,
+      },
+      {
+        id: 'student_manager_logic',
+        description: 'Verify Student averages and StudentManager class averages match constraints.',
+        checkFn: `s1 = Student("Alice", [80, 90]); s2 = Student("Bob", [70, 75]); mgr = StudentManager(); mgr.add_student(s1); mgr.add_student(s2); assert s1.get_average() == 85.0 and mgr.get_class_average() == 78.75, "StudentManager class average calculation incorrect"`,
+      },
+    ],
+    hints: ['Inside \`Student.get_average()\`, handle empty lists gracefully by returning \`0.0\` to avoid division-by-zero errors.', 'Iterate through all student items in \`self.students\` to compute the class average.'],
     published: true,
   }));
 

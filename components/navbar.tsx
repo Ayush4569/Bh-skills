@@ -7,6 +7,9 @@ import { Sun, Moon, Flame, Trophy, LayoutDashboard, Terminal, Settings, Menu, X 
 import { useTheme } from './theme-provider';
 import { useProgress } from './progress-provider';
 
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+
 export default function Navbar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
@@ -25,8 +28,6 @@ export default function Navbar() {
     return pathname.startsWith(path);
   };
 
-  // Skip rendering navbar on landing page if we want, or render it everywhere.
-  // Rendering everywhere is standard and helpful, but we can make it sleek.
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -67,19 +68,20 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {/* Level & XP Badge */}
             {progress && (
-              <div className="flex items-center gap-2 rounded-full border border-border/60 bg-muted/30 px-3.5 py-1 text-xs font-semibold">
-                <Flame className="h-4.5 w-4.5 text-amber-500 fill-amber-500" />
+              <Badge variant="outline" className="gap-2 px-3 py-1 text-xs font-semibold rounded-full bg-muted/30">
+                <Flame className="h-4 w-4 text-amber-500 fill-amber-500" />
                 <span className="text-muted-foreground">LVL</span>
                 <span className="text-foreground">{progress.currentLevel}</span>
                 <span className="text-muted-foreground/40">•</span>
                 <span className="text-foreground">{progress.xp} XP</span>
-              </div>
+              </Badge>
             )}
 
             {/* Theme Toggle */}
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               onClick={toggleTheme}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/50 transition-colors text-foreground"
               aria-label="Toggle Theme"
             >
               {theme === 'dark' ? (
@@ -87,27 +89,29 @@ export default function Navbar() {
               ) : (
                 <Moon className="h-4 w-4 text-blue-600" />
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center gap-3">
-            <button
+            <Button
+              variant="outline"
+              size="icon-sm"
               onClick={toggleTheme}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/50 transition-colors text-foreground"
             >
               {theme === 'dark' ? (
                 <Sun className="h-4 w-4 text-yellow-500" />
               ) : (
                 <Moon className="h-4 w-4 text-blue-600" />
               )}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border/40 hover:bg-muted/50 transition-colors text-foreground"
             >
               {mobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

@@ -175,3 +175,7 @@ body {
     @apply font-sans;
   }
 }
+
+Button {
+  cursor: pointer;
+}

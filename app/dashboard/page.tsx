@@ -20,6 +20,10 @@ import {
 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
 import { LoadingScreen } from '@/components/loader';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 // Map icon names to Lucide icons
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -93,20 +97,22 @@ export default function Dashboard() {
             Track your level, XP achievements, and learning milestones.
           </p>
         </div>
-        <button
+        <Button
+          variant="destructive"
+          size="sm"
           onClick={handleResetProgress}
           disabled={resetting}
-          className="inline-flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 text-destructive px-3.5 py-2 text-xs font-semibold transition-colors disabled:opacity-50"
+          className="gap-2 font-bold"
         >
           <RotateCcw className="h-3.5 w-3.5" />
           {resetting ? 'Resetting...' : 'Reset Progress'}
-        </button>
+        </Button>
       </div>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* XP & Level Progress */}
-        <div className="col-span-1 md:col-span-2 rounded-2xl border border-border/50 bg-card p-6 flex flex-col justify-between">
+        <Card className="col-span-1 md:col-span-2 p-6 flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Current Level</span>
@@ -137,22 +143,22 @@ export default function Dashboard() {
               />
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Overview Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-border/50 bg-card p-5 flex flex-col justify-between">
+          <Card className="p-5 flex flex-col justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase">Challenges Completed</span>
             <span className="text-3xl font-extrabold text-foreground mt-2">
               {progress?.completedChallenges?.length || 0}
             </span>
             <span className="text-[10px] text-muted-foreground mt-1">unlocked the next step</span>
-          </div>
-          <div className="rounded-2xl border border-border/50 bg-card p-5 flex flex-col justify-between">
+          </Card>
+          <Card className="p-5 flex flex-col justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase">Total Submissions</span>
             <span className="text-3xl font-extrabold text-foreground mt-2">{attemptsCount}</span>
             <span className="text-[10px] text-muted-foreground mt-1">all run attempts logged</span>
-          </div>
+          </Card>
         </div>
       </div>
 
@@ -169,12 +175,12 @@ export default function Dashboard() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Web Path Card */}
-              <div className="group rounded-2xl border border-border/50 bg-card p-6 flex flex-col justify-between hover:border-border hover:shadow-[0_0_15px_rgba(245,158,11,0.03)] transition-all">
+              <Card className="group p-6 flex flex-col justify-between hover:border-amber-500/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.03)] transition-all">
                 <div>
-                  <h4 className="text-lg font-bold">Web Development</h4>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  <CardTitle className="text-lg font-bold">Web Development</CardTitle>
+                  <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     HTML Structure, CSS Styling, Box Model, Flexbox, and JavaScript interaction challenges.
-                  </p>
+                  </CardDescription>
                 </div>
                 <Link
                   href="/labs/web"
@@ -183,15 +189,15 @@ export default function Dashboard() {
                   Enter Web Lab
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-              </div>
+              </Card>
 
               {/* Python Path Card */}
-              <div className="group rounded-2xl border border-border/50 bg-card p-6 flex flex-col justify-between hover:border-border hover:shadow-[0_0_15px_rgba(99,102,241,0.03)] transition-all">
+              <Card className="group p-6 flex flex-col justify-between hover:border-indigo-500/40 hover:shadow-[0_0_15px_rgba(99,102,241,0.03)] transition-all">
                 <div>
-                  <h4 className="text-lg font-bold">Python Programming</h4>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  <CardTitle className="text-lg font-bold">Python Programming</CardTitle>
+                  <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     Logic, functions, variables, list filters, classes, and browser-based Pyodide exceptions.
-                  </p>
+                  </CardDescription>
                 </div>
                 <Link
                   href="/labs/python"
@@ -200,18 +206,18 @@ export default function Dashboard() {
                   Enter Python Lab
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-              </div>
+              </Card>
             </div>
           </div>
 
-          {/* Coding Time Graph (Placeholder for MVP) */}
-          <div className="rounded-2xl border border-border/50 bg-card p-6 space-y-4">
+          {/* Coding Time Graph */}
+          <Card className="p-6 space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <Activity className="h-5 w-5 text-indigo-500" />
                 Weekly Activity (Mock)
               </h3>
-              <span className="text-xs text-muted-foreground font-semibold">Updated in real-time</span>
+              <Badge variant="outline" className="text-xs font-semibold">Updated in real-time</Badge>
             </div>
 
             {/* Custom SVG line-bar graph */}
@@ -234,7 +240,7 @@ export default function Dashboard() {
                 );
               })}
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Right 1 Col: Achievements & Recent Activity */}
@@ -276,11 +282,11 @@ export default function Dashboard() {
                     </div>
                     <div className="text-right shrink-0">
                       {unlocked ? (
-                        <span className="text-[10px] font-bold text-emerald-500 uppercase">Unlocked</span>
+                        <Badge variant="success" className="text-[10px] font-bold uppercase">Unlocked</Badge>
                       ) : (
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase">
                           {ach.xpRequired} XP
-                        </span>
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -316,7 +322,7 @@ export default function Dashboard() {
                           {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <span className="text-xs font-extrabold text-amber-500">+{log.amount} XP</span>
+                      <Badge variant="warning" className="text-xs font-extrabold">+{log.amount} XP</Badge>
                     </div>
                   </div>
                 ))}
@@ -326,39 +332,35 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Custom Confirmation Modal */}
-      {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
-          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-6 mx-4 transform scale-100 transition-all">
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-foreground">
-                {confirmModal.title}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {confirmModal.message}
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-end gap-3 pt-2">
-              <button
-                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-                className="px-4 py-2 text-xs font-bold rounded-lg border border-border hover:bg-muted/40 transition-colors text-foreground"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
-                  confirmModal.onConfirm();
-                }}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-destructive hover:bg-destructive/90 text-white transition-colors"
-              >
-                Yes, Reset
-              </button>
-            </div>
+      {/* Confirmation Dialog (Shadcn UI) */}
+      <Dialog open={confirmModal.isOpen} onOpenChange={(open) => setConfirmModal((prev) => ({ ...prev, isOpen: open }))}>
+        <DialogContent showCloseButton className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{confirmModal.title}</DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              {confirmModal.message}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                confirmModal.onConfirm();
+              }}
+            >
+              Yes, Reset
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

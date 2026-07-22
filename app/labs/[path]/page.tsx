@@ -160,6 +160,20 @@ const ROADMAP_CONFIGS: Record<string, MainTopicConfig[]> = {
   ]
 };
 
+const FINAL_PROJECT_TITLES = new Set([
+  'Build Portfolio Website',
+  'Pricing Card',
+  'Dashboard',
+  'Landing Page',
+  'Calculator',
+  'Quiz App',
+  'Todo App',
+  'Weather App',
+  'Quiz Game',
+  'Password Generator',
+  'Student Manager'
+]);
+
 export default function PathLabs({ params }: { params: Promise<{ path: string }> }) {
   const { path } = use(params);
 
@@ -199,14 +213,17 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
 
   const configs = ROADMAP_CONFIGS[course.slug] || [];
 
-  // Group fetched database modules into the configuration topics
+  // Group fetched database modules into the configuration topics, filtering out final projects
   const groupedTopics = configs.map((config) => {
+    // 1. Map regular subtopics, filtering out final projects
     const subtopics = config.subtopics.map((subConfig) => {
       const matchedModules = modules.filter((m) =>
         subConfig.moduleOrders.includes(m.order)
       );
       matchedModules.sort((a, b) => a.order - b.order);
-      const challenges = matchedModules.flatMap((m) => m.challenges || []);
+      const challenges = matchedModules
+        .flatMap((m) => m.challenges || [])
+        .filter((c) => !FINAL_PROJECT_TITLES.has(c.title));
 
       return {
         title: subConfig.title,
@@ -214,6 +231,58 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
         challenges,
       };
     });
+
+    // 2. Collect final projects that belong to this config
+    const configModuleOrders = config.subtopics.flatMap(s => s.moduleOrders);
+    const configModules = modules.filter(m => configModuleOrders.includes(m.order));
+    const configProjects = configModules
+      .flatMap(m => m.challenges || [])
+      .filter(c => FINAL_PROJECT_TITLES.has(c.title));
+
+    // Sort configProjects in the desired order
+    if (course.slug === 'web') {
+      const webOrder = [
+        'Build Portfolio Website',
+        'Pricing Card',
+        'Dashboard',
+        'Landing Page',
+        'Calculator',
+        'Quiz App',
+        'Todo App',
+        'Weather App'
+      ];
+      configProjects.sort((a, b) => webOrder.indexOf(a.title) - webOrder.indexOf(b.title));
+    } else if (course.slug === 'python') {
+      const pythonOrder = [
+        'Calculator',
+        'Quiz Game',
+        'Password Generator',
+        'Student Manager'
+      ];
+      configProjects.sort((a, b) => pythonOrder.indexOf(a.title) - pythonOrder.indexOf(b.title));
+    }
+
+    // 3. Append the Final Projects subtopic card to this config if there are any projects
+    if (configProjects.length > 0) {
+      let title = 'Final Projects';
+      let desc = '';
+      if (config.title === 'HTML Foundation') {
+        title = 'Final Project';
+        desc = 'Complete the HTML Capstone project to build your personal developer portfolio.';
+      } else if (config.title === 'CSS Styling') {
+        desc = 'Complete the CSS Capstone projects to build pricing cards, dashboards, and landing page layouts.';
+      } else if (config.title === 'JavaScript Interactivity') {
+        desc = 'Complete the JavaScript Capstone projects to build interactive calculators, quizzes, todos, and weather widgets.';
+      } else if (config.title === 'Python Programming') {
+        desc = 'Complete the Python Capstone projects to build terminal calculators, quizzes, generators, and managers.';
+      }
+
+      subtopics.push({
+        title,
+        description: desc,
+        challenges: configProjects
+      });
+    }
 
     return {
       title: config.title,
@@ -228,19 +297,18 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
   const allChallenges = modules.flatMap(m => m.challenges);
   const totalProblems = allChallenges.length;
   const solvedProblems = allChallenges.filter(c => progress?.completedChallenges?.includes(c._id)).length;
-  const totalTopics = configs.flatMap(c => c.subtopics).length || modules.length;
+  const totalTopics = groupedTopics.flatMap(t => t.subtopics).length;
 
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl w-full px-4 py-12 sm:px-6 lg:px-8 space-y-12">
         {/* Back Link */}
         <div className="flex items-center">
-          <Link
-            href="/labs"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors border border-border/40 px-2.5 py-1.5 rounded-lg bg-card"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to paths
+          <Link href="/labs">
+            <Button variant="outline" size="sm" className="gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+              Back to paths
+            </Button>
           </Link>
         </div>
 
@@ -287,7 +355,7 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
               <div key={topicIdx} className="space-y-12 relative z-10">
                 {/* Main Topic Center Card */}
                 <div className="relative flex justify-center w-full z-20">
-                  <div className="w-full md:max-w-md ml-12 md:ml-0 bg-card border border-border/80 rounded-3xl p-5 shadow-sm relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
+                  <Card className="w-full md:max-w-md ml-12 md:ml-0 p-5 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
                     {/* Decorative background glow */}
                     <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full" />
                     
@@ -303,24 +371,24 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
                         )}
                       </div>
 
-                      <div className="space-y-1.5 flex-1 text-left">
+                      <div className="space-y-1.5  flex-1 text-left">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <h2 className="text-base font-extrabold tracking-tight text-foreground leading-snug">
                             {topic.title}
                           </h2>
-                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                          <Badge variant="secondary" className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
                             {topic.badge}
-                          </span>
-                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
+                          </Badge>
+                          <Badge variant="outline" className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
                             {topic.duration}
-                          </span>
+                          </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground leading-relaxed">
                           {topic.description}
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 </div>
 
                 {/* Subtopics of this Main Topic */}
@@ -372,13 +440,13 @@ function SubtopicTimelineCard({
 
   return (
     <div
-      className={`relative flex items-center w-full min-h-[120px] ${
+      className={`relative flex  items-center w-full min-h-[120px] ${
         isRight ? 'md:flex-row-reverse' : 'md:flex-row'
       }`}
     >
       {/* Horizontal Connector Line */}
       <div
-        className={`hidden md:block absolute top-1/2 -translate-y-1/2 h-0.5 bg-border/60 z-0 ${
+        className={`hidden  md:block absolute top-1/2 -translate-y-1/2 h-0.5 bg-border/60 z-0 ${
           isRight ? 'left-1/2 w-12' : 'right-1/2 w-12'
         }`}
       />
@@ -419,119 +487,114 @@ function SubtopicTimelineCard({
       </div>
 
       {/* Subtopic Card wrapper */}
-      <div className="w-full md:w-[420px] ml-14 md:ml-0">
+      <div className="w-full md:w-[420px] rounded-md ml-14 md:ml-0">
         <motion.div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onClick={() => setIsHovered(!isHovered)}
           whileHover={{ scale: 1.01 }}
-          className={`rounded-2xl border p-4 sm:p-5 transition-all duration-300 relative bg-card shadow-sm cursor-pointer ${
-            isHovered
-              ? isWeb
-                ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.08)]'
-                : 'border-indigo-500/60 shadow-[0_0_20px_rgba(99,102,241,0.08)]'
-              : 'border-border/80'
-          }`}
         >
-          <div className="space-y-1">
-            <div className="flex justify-between items-start">
-              <h3 className="text-sm font-bold text-foreground leading-snug">
-                {subtopic.title}
-              </h3>
-              <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full border border-border/40 ml-2 shrink-0">
-                {totalSub} {totalSub === 1 ? 'problem' : 'problems'}
-              </span>
-            </div>
+          <Card
+            className={`p-4 sm:p-5 transition-all duration-300 relative cursor-pointer ${
+              isHovered
+                ? isWeb
+                  ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.08)]'
+                  : 'border-indigo-500/60 shadow-[0_0_20px_rgba(99,102,241,0.08)]'
+                : 'border-border/80'
+            }`}
+          >
+            <div className="space-y-1">
+              <div className="flex justify-between items-start">
+                <h3 className="text-sm font-bold text-foreground leading-snug">
+                  {subtopic.title}
+                </h3>
+                <Badge variant="outline" className="text-[10px] font-bold text-muted-foreground ml-2 shrink-0">
+                  {totalSub} {totalSub === 1 ? 'problem' : 'problems'}
+                </Badge>
+              </div>
 
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {subtopic.description}
-            </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {subtopic.description}
+              </p>
 
-            {/* Collapsible Challenges Checklist - hidden by default, visible when hovered/clicked (Image 4) */}
-            <AnimatePresence>
-              {isHovered && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: 'easeInOut' }}
-                  className="mt-4 pt-4 border-t border-border/40 space-y-2 overflow-hidden"
-                >
-                  {subtopic.challenges.map((chal) => {
-                    const isCompleted = progress?.completedChallenges?.includes(chal._id) || false;
-                    const isUnlocked = progress?.unlockedChallenges?.includes(chal._id) || false;
-                    const isNextUp = isUnlocked && !isCompleted;
+              {/* Collapsible Challenges Checklist */}
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    className="mt-4 pt-4 border-t border-border/40 space-y-2 overflow-hidden"
+                  >
+                    {subtopic.challenges.map((chal) => {
+                      const isCompleted = progress?.completedChallenges?.includes(chal._id) || false;
+                      const isUnlocked = progress?.unlockedChallenges?.includes(chal._id) || false;
+                      const isNextUp = isUnlocked && !isCompleted;
 
-                    const difficultyBadgeColor = {
-                      easy: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15',
-                      medium: 'bg-amber-500/10 text-amber-500 border-amber-500/15',
-                      hard: 'bg-rose-500/10 text-rose-500 border-rose-500/15',
-                      miniproject: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/15',
-                    }[chal.difficulty];
+                      const difficultyVariant = {
+                        easy: 'success' as const,
+                        medium: 'warning' as const,
+                        hard: 'destructive' as const,
+                        miniproject: 'secondary' as const,
+                      }[chal.difficulty];
 
-                    return (
-                      <Link
-                        key={chal._id}
-                        href={`/challenge/${chal._id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 group/item ${
-                          isCompleted
-                            ? 'border-emerald-500/10 bg-emerald-500/[0.01] hover:bg-emerald-500/[0.03]'
-                            : isNextUp
-                            ? isWeb
-                              ? 'border-amber-500/30 bg-amber-500/[0.01] hover:border-amber-500 hover:bg-amber-500/[0.03]'
-                              : 'border-indigo-500/30 bg-indigo-500/[0.01] hover:border-indigo-500 hover:bg-indigo-500/[0.03]'
-                            : 'border-border/60 hover:border-border hover:bg-muted/40'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {isCompleted ? (
-                            <div className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
-                              <Check className="h-3 w-3 stroke-[3]" />
-                            </div>
-                          ) : (
-                            <div
-                              className={`h-5 w-5 rounded-full border-2 ${
-                                isWeb
-                                  ? 'border-amber-500/60 group-hover/item:border-amber-500'
-                                  : 'border-indigo-500/60 group-hover/item:border-indigo-500'
-                              } bg-transparent shrink-0`}
-                            />
-                          )}
+                      return (
+                        <Link
+                          key={chal._id}
+                          href={`/challenge/${chal._id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 group/item ${
+                            isCompleted
+                              ? 'border-emerald-500/10 bg-emerald-500/[0.01] hover:bg-emerald-500/[0.03]'
+                              : isNextUp
+                              ? isWeb
+                                ? 'border-amber-500/30 bg-amber-500/[0.01] hover:border-amber-500 hover:bg-amber-500/[0.03]'
+                                : 'border-indigo-500/30 bg-indigo-500/[0.01] hover:border-indigo-500 hover:bg-indigo-500/[0.03]'
+                              : 'border-border/60 hover:border-border hover:bg-muted/40'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {isCompleted ? (
+                              <div className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                                <Check className="h-3 w-3 stroke-[3]" />
+                              </div>
+                            ) : (
+                              <div
+                                className={`h-5 w-5 rounded-full border-2 ${
+                                  isWeb
+                                    ? 'border-amber-500/60 group-hover/item:border-amber-500'
+                                    : 'border-indigo-500/60 group-hover/item:border-indigo-500'
+                                } bg-transparent shrink-0`}
+                              />
+                            )}
 
-                          <span className="text-sm font-bold text-foreground/90 group-hover/item:text-foreground transition-colors">
-                            {chal.title}
-                          </span>
-
-                          {isNextUp && (
-                            <span
-                              className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${
-                                isWeb
-                                  ? 'bg-amber-500/15 text-amber-500 border border-amber-500/15'
-                                  : 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/15'
-                              }`}
-                            >
-                              <Sparkles className="h-2 w-2 animate-bounce" />
-                              Next Up
+                            <span className="text-sm font-bold text-foreground/90 group-hover/item:text-foreground transition-colors">
+                              {chal.title}
                             </span>
-                          )}
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`text-[9px] font-extrabold uppercase border px-2 py-0.5 rounded-md ${difficultyBadgeColor}`}
-                          >
-                            {chal.difficulty}
-                          </span>
-                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover/item:text-foreground/60 transition-colors" />
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                            {isNextUp && (
+                              <Badge variant="outline" className={`gap-0.5 text-[8px] font-extrabold uppercase tracking-wider ${isWeb ? 'text-amber-500 border-amber-500/30 bg-amber-500/10' : 'text-indigo-500 border-indigo-500/30 bg-indigo-500/10'}`}>
+                                <Sparkles className="h-2 w-2 animate-bounce" />
+                                Next Up
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Badge variant={difficultyVariant} className="text-[9px] font-extrabold uppercase">
+                              {chal.difficulty}
+                            </Badge>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover/item:text-foreground/60 transition-colors" />
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </Card>
         </motion.div>
       </div>
 

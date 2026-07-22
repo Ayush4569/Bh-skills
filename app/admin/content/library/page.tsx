@@ -5,6 +5,11 @@ import Link from 'next/link';
 import { Plus, Edit, Trash2, Globe, Terminal, Award, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { LoadingScreen } from '@/components/loader';
 
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+
 interface Challenge {
   _id: string;
   title: string;
@@ -117,29 +122,28 @@ export default function AdminDashboard() {
             Manage your courses, modules, coding templates, and validation logic.
           </p>
         </div>
-        <Link
-          href="/admin/challenge/new"
-          className="inline-flex items-center gap-2 rounded-xl bg-primary hover:opacity-90 text-primary-foreground px-4 py-2.5 text-sm font-semibold transition-all hover:scale-[1.02]"
-        >
-          <Plus className="h-4 w-4" />
-          Create Challenge
+        <Link href="/admin/challenge/new">
+          <Button className='rounded-md bg-[#522BFF] text-white' >
+            <Plus className="h-4 w-4" />
+            Create Challenge
+          </Button>
         </Link>
       </div>
 
       {/* Metrics overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="rounded-2xl border border-border/50 bg-card p-5">
+        <Card className="p-5">
           <span className="text-xs font-semibold text-muted-foreground uppercase">Total Challenges</span>
           <p className="text-2xl font-extrabold text-foreground mt-1">{challenges.length}</p>
-        </div>
-        <div className="rounded-2xl border border-border/50 bg-card p-5">
+        </Card>
+        <Card className="p-5">
           <span className="text-xs font-semibold text-emerald-500 uppercase">Published Live</span>
           <p className="text-2xl font-extrabold text-emerald-500 mt-1">{publishedCount}</p>
-        </div>
-        <div className="rounded-2xl border border-border/50 bg-card p-5">
+        </Card>
+        <Card className="p-5">
           <span className="text-xs font-semibold text-amber-500 uppercase">Unpublished Drafts</span>
           <p className="text-2xl font-extrabold text-amber-500 mt-1">{draftCount}</p>
-        </div>
+        </Card>
       </div>
 
       {/* Error state */}
@@ -151,7 +155,7 @@ export default function AdminDashboard() {
       )}
 
       {/* Table list */}
-      <div className="rounded-2xl border border-border/40 overflow-hidden bg-card">
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
@@ -187,7 +191,7 @@ export default function AdminDashboard() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className="capitalize text-xs">{chal.difficulty}</span>
+                      <Badge variant="outline" className="capitalize text-xs font-semibold">{chal.difficulty}</Badge>
                     </td>
                     <td className="p-4 text-xs font-semibold">{chal.xp} XP</td>
                     <td className="p-4 text-muted-foreground text-xs truncate max-w-[180px]">
@@ -195,30 +199,31 @@ export default function AdminDashboard() {
                     </td>
                     <td className="p-4">
                       {chal.published ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                        <Badge variant="success" className="uppercase text-[10px] font-bold">
                           Live
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider">
+                        <Badge variant="warning" className="uppercase text-[10px] font-bold">
                           Draft
-                        </span>
+                        </Badge>
                       )}
                     </td>
                     <td className="p-4 text-right space-x-2.5 whitespace-nowrap">
-                      <Link
-                        href={`/admin/challenge/${chal._id}/edit`}
-                        className="inline-flex items-center gap-1 rounded-lg border border-border hover:bg-muted/50 text-foreground px-2.5 py-1.5 text-xs font-semibold transition-colors"
-                      >
-                        <Edit className="h-3.5 w-3.5" />
-                        Edit
+                      <Link href={`/admin/challenge/${chal._id}/edit`}>
+                        <Button variant="outline" size="sm" className="gap-1 font-semibold">
+                          <Edit className="h-3.5 w-3.5" />
+                          Edit
+                        </Button>
                       </Link>
-                      <button
+                      <Button
+                        variant="destructive"
+                        size="sm"
                         onClick={() => handleDelete(chal._id, chal.title)}
-                        className="inline-flex items-center gap-1 rounded-lg border border-rose-500/30 hover:bg-rose-500/10 text-rose-500 px-2.5 py-1.5 text-xs font-semibold transition-colors"
+                        className="gap-1 font-semibold"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         Delete
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))
@@ -226,47 +231,39 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </div>
+      </Card>
 
-      {/* Custom Confirmation/Alert Modal */}
-      {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300">
-          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-6 mx-4 transform scale-100 transition-all">
-            <div className="space-y-2">
-              <h3 className="text-lg font-bold text-foreground">
-                {confirmModal.title}
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {confirmModal.message}
-              </p>
-            </div>
-            
-            <div className="flex items-center justify-end gap-3 pt-2">
-              {confirmModal.showCancel && (
-                <button
-                  onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-                  className="px-4 py-2 text-xs font-bold rounded-lg border border-border hover:bg-muted/40 transition-colors text-foreground"
-                >
-                  {confirmModal.cancelText || 'Cancel'}
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
-                  confirmModal.onConfirm();
-                }}
-                className={`px-4 py-2 text-xs font-bold rounded-lg text-white transition-colors ${
-                  confirmModal.title === 'Error'
-                    ? 'bg-indigo-600 hover:bg-indigo-700'
-                    : 'bg-destructive hover:bg-destructive/90'
-                }`}
+      {/* Confirmation/Alert Dialog */}
+      <Dialog open={confirmModal.isOpen} onOpenChange={(open) => setConfirmModal((prev) => ({ ...prev, isOpen: open }))}>
+        <DialogContent showCloseButton className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{confirmModal.title}</DialogTitle>
+            <DialogDescription className="pt-2 leading-relaxed">
+              {confirmModal.message}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex items-center justify-end gap-3 pt-4">
+            {confirmModal.showCancel && (
+              <Button
+                variant="outline"
+                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
               >
-                {confirmModal.confirmText || 'Confirm'}
-              </button>
-            </div>
+                {confirmModal.cancelText || 'Cancel'}
+              </Button>
+            )}
+            <Button
+              variant={confirmModal.title === 'Error' ? 'default' : 'destructive'}
+              onClick={() => {
+                setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                confirmModal.onConfirm();
+              }}
+            >
+              {confirmModal.confirmText || 'Confirm'}
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

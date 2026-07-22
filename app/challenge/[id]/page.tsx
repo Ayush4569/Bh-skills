@@ -91,6 +91,27 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const [pyodide, setPyodide] = useState<any>(null);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
 
+  // Custom inline backtick code formatter
+  const renderFormattedText = (text: string) => {
+    if (!text) return null;
+    const parts = text.split(/(`[^`]+`)/g);
+    return (
+      <>
+        {parts.map((part, index) => {
+          if (part.startsWith('`') && part.endsWith('`')) {
+            const codeText = part.slice(1, -1);
+            return (
+              <code key={index} className="px-1 py-0.5 rounded bg-muted/60 text-indigo-500 dark:text-indigo-400 font-mono text-xs border border-border/40">
+                {codeText}
+              </code>
+            );
+          }
+          return part;
+        })}
+      </>
+    );
+  };
+
   // Parse description into one-liner overview and question
   const parseChallengeDescription = (description: string) => {
     if (!description) return { oneLiner: '', question: '' };
@@ -628,7 +649,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
               <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{challenge.title}</h1>
               {parsedDesc.oneLiner && (
                 <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
-                  {parsedDesc.oneLiner}
+                  {renderFormattedText(parsedDesc.oneLiner)}
                 </p>
               )}
             </div>
@@ -647,12 +668,14 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
                     return (
                       <ul key={i} className="list-disc pl-5 space-y-1.5 my-1">
                         {para.split('\n').map((item, idx) => (
-                          <li key={idx}>{item.replace(/^[*-\s]+/, '').trim()}</li>
+                          <li key={idx}>
+                            {renderFormattedText(item.replace(/^[*-\s]+/, '').trim())}
+                          </li>
                         ))}
                       </ul>
                     );
                   }
-                  return <p key={i}>{para}</p>;
+                  return <p key={i}>{renderFormattedText(para)}</p>;
                 })}
               </div>
             </div>
@@ -679,7 +702,7 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
                     )}
                     <div className="flex-1">
                       <p className={`font-medium ${status?.passed === false ? 'text-rose-500' : 'text-foreground/90'}`}>
-                        {rule.description}
+                        {renderFormattedText(rule.description)}
                       </p>
                       {status?.passed === false && status.error && (
                         <p className="text-[10px] text-rose-400 font-mono mt-1 bg-rose-500/5 p-1.5 rounded-md border border-rose-500/10">
@@ -820,9 +843,9 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
           <button
             onClick={handleRunCode}
             disabled={running || validating || skipping}
-            className="inline-flex items-center gap-2 rounded-lg border border-border/60 hover:bg-muted/40 text-foreground px-5 py-2.5 text-xs font-bold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-border/60 text-foreground px-5 py-2.5 text-xs font-bold transition-colors disabled:opacity-50 bg-[#522BFF] text-white"
           >
-            <Play className="h-3.5 w-3.5 text-emerald-500" />
+            <Play className="h-3.5 w-3.5 text-white" />
             {running ? 'Running...' : 'Run Code'}
           </button>
 

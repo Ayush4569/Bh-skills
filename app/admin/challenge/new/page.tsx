@@ -409,7 +409,7 @@ export default function NewChallenge() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary hover:opacity-90 text-primary-foreground px-6 py-3 text-sm font-semibold transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-[#522BFF] text-primary-foreground px-6 py-3 text-sm font-semibold transition-all disabled:opacity-50"
           >
             <Save className="h-4.5 w-4.5" />
             {saving ? 'Saving...' : 'Save Challenge'}
