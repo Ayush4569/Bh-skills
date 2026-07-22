@@ -10,7 +10,6 @@ import {
   Play,
   CheckCircle,
   XCircle,
-  HelpCircle,
   Award,
   ChevronRight,
   ArrowLeft,
@@ -18,9 +17,7 @@ import {
   Sparkles,
   Terminal,
   Eye,
-  Check,
-  Copy,
-  ChevronDown
+  Check
 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
 import CodeEditor from '@/components/code-editor';
@@ -45,6 +42,7 @@ interface Challenge {
   validationRules: ValidationRule[];
   hints: string[];
   nextChallengeId: string | null;
+  isTopicEnd?: boolean;
 }
 
 interface TestStatus {
@@ -63,11 +61,6 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(true);
-
-  // Hints States
-  const [revealedHints, setRevealedHints] = useState<Record<number, boolean>>({});
-  const [revealedSolution, setRevealedSolution] = useState(false);
-  const [copiedSolution, setCopiedSolution] = useState(false);
 
   // Confirm Modal state
   const [confirmModal, setConfirmModal] = useState<{
@@ -98,14 +91,27 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   const [pyodide, setPyodide] = useState<any>(null);
   const [pyodideLoaded, setPyodideLoaded] = useState(false);
 
+  // Parse description into one-liner overview and question
+  const parseChallengeDescription = (description: string) => {
+    if (!description) return { oneLiner: '', question: '' };
+
+    const parts = description.split(/###\s*(?:Objective|Task|Challenge Question|Challenge)/i);
+    if (parts.length > 1) {
+      let oneLiner = parts[0].trim().replace(/^###[^\n]*\n?/, '').trim();
+      let question = parts.slice(1).join('\n').trim();
+      return { oneLiner, question };
+    } else {
+      let clean = description.trim().replace(/^###[^\n]*\n?/, '').trim();
+      return { oneLiner: clean, question: '' };
+    }
+  };
+
   // Fetch Challenge Details
   useEffect(() => {
     setLoading(true);
     setSolved(false);
     setTestStatuses({});
     setConsoleLogs([]);
-    setRevealedHints({});
-    setRevealedSolution(false);
 
     fetch(`/api/labs/challenges/${challengeId}`)
       .then((res) => res.json())
@@ -310,11 +316,15 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
   // Award XP and complete challenge handler
   const handleChallengePassed = async () => {
     setSolved(true);
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-    });
+
+    // Confetti when completing the last challenge of a main topic section (HTML, CSS, JS, Python)!
+    if (challenge?.isTopicEnd) {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.6 },
+      });
+    }
 
     setConsoleLogs((prev) => [
       ...prev,
@@ -556,14 +566,6 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
     setConsoleLogs((prev) => [...prev, { text: 'Editor reset to starter template.', severity: 'system' }]);
   };
 
-  // Copy solution logic
-  const handleCopySolution = () => {
-    if (!challenge) return;
-    navigator.clipboard.writeText(challenge.solution);
-    setCopiedSolution(true);
-    setTimeout(() => setCopiedSolution(false), 2000);
-  };
-
   if (loading) {
     return <LoadingScreen message="Loading workspace details..." />;
   }
@@ -586,6 +588,8 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
     miniproject: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20',
   }[challenge.difficulty];
 
+  const parsedDesc = parseChallengeDescription(challenge.description);
+
   return (
     <div className="flex-1 flex flex-col h-[calc(100vh-64px)] overflow-hidden">
       {/* Script loading for Pyodide */}
@@ -603,48 +607,56 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
         
         {/* Left Pane: Details & Instructions */}
         <div className="flex flex-col border-r border-border/40 overflow-y-auto p-6 space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border/30 pb-4">
-            <Link href="/labs" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Labs
-            </Link>
-            <div className="flex items-center gap-2">
-              <span className={`text-[10px] font-bold border px-2.5 py-0.5 rounded-full uppercase tracking-wider ${difficultyColors}`}>
-                {challenge.difficulty}
-              </span>
-              <span className="text-xs font-semibold text-muted-foreground">
-                {challenge.xp} XP reward
-              </span>
+          {/* Header & Topic Title */}
+          <div className="space-y-3 border-b border-border/30 pb-4">
+            <div className="flex items-center justify-between">
+              <Link href="/labs" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Labs
+              </Link>
+              <div className="flex items-center gap-2">
+                <span className={`text-[10px] font-bold border px-2.5 py-0.5 rounded-full uppercase tracking-wider ${difficultyColors}`}>
+                  {challenge.difficulty}
+                </span>
+                <span className="text-xs font-semibold text-muted-foreground bg-muted/40 border border-border/40 px-2.5 py-0.5 rounded-full">
+                  {challenge.xp} XP
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-extrabold tracking-tight text-foreground">{challenge.title}</h1>
+              {parsedDesc.oneLiner && (
+                <p className="text-xs text-muted-foreground leading-relaxed mt-1.5">
+                  {parsedDesc.oneLiner}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Title */}
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">{challenge.title}</h1>
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1 inline-block">
-              LANGUAGE: {challenge.language}
-            </span>
-          </div>
-
-          {/* Instructions (markdown output styled) */}
-          <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground space-y-4">
-            {challenge.description.split('\n\n').map((para, i) => {
-              if (para.startsWith('###')) {
-                return <h3 key={i} className="text-lg font-bold text-foreground mt-4">{para.replace('###', '').trim()}</h3>;
-              }
-              if (para.startsWith('*') || para.startsWith('-')) {
-                return (
-                  <ul key={i} className="list-disc pl-5 space-y-1.5 mt-2">
-                    {para.split('\n').map((item, idx) => (
-                      <li key={idx}>{item.replace(/^[*-\s]+/, '').trim()}</li>
-                    ))}
-                  </ul>
-                );
-              }
-              return <p key={i} className="leading-relaxed">{para}</p>;
-            })}
-          </div>
+          {/* Challenge Question Section */}
+          {parsedDesc.question && (
+            <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.03] dark:bg-indigo-500/[0.05] p-5 space-y-2">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5" />
+                Challenge Question
+              </h3>
+              <div className="text-sm font-medium text-foreground leading-relaxed space-y-2">
+                {parsedDesc.question.split('\n\n').map((para, i) => {
+                  if (para.startsWith('*') || para.startsWith('-')) {
+                    return (
+                      <ul key={i} className="list-disc pl-5 space-y-1.5 my-1">
+                        {para.split('\n').map((item, idx) => (
+                          <li key={idx}>{item.replace(/^[*-\s]+/, '').trim()}</li>
+                        ))}
+                      </ul>
+                    );
+                  }
+                  return <p key={i}>{para}</p>;
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Validation Checklist */}
           <div className="rounded-xl border border-border/50 bg-card p-5 space-y-3">
@@ -681,68 +693,28 @@ export default function ChallengePage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          {/* Hints Section */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-              <HelpCircle className="h-4.5 w-4.5 text-indigo-500" />
-              Hints & Help
-            </h3>
-
-            <div className="space-y-2.5">
-              {challenge.hints.map((hint, idx) => {
-                const isRevealed = revealedHints[idx] || false;
-                const isPreviousRevealed = idx === 0 || revealedHints[idx - 1] === true;
-
-                return (
-                  <div key={idx} className="rounded-lg border border-border/40 bg-card/40 overflow-hidden text-sm">
-                    {isRevealed ? (
-                      <div className="p-3 bg-muted/20 text-muted-foreground leading-relaxed">
-                        <span className="font-bold text-foreground">Hint {idx + 1}:</span> {hint}
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setRevealedHints((prev) => ({ ...prev, [idx]: true }))}
-                        disabled={!isPreviousRevealed}
-                        className="w-full text-left p-3 flex justify-between items-center hover:bg-muted/40 transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
-                      >
-                        <span className="font-semibold text-muted-foreground">Reveal Hint {idx + 1}</span>
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Reveal Solution */}
-              <div className="rounded-lg border border-border/40 bg-card/40 overflow-hidden text-sm">
-                {revealedSolution ? (
-                  <div className="p-4 bg-muted/20 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-foreground">Official Solution</span>
-                      <button
-                        onClick={handleCopySolution}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-500 hover:text-indigo-600"
-                      >
-                        {copiedSolution ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                        {copiedSolution ? 'Copied' : 'Copy Solution'}
-                      </button>
-                    </div>
-                    <pre className="text-xs font-mono p-3 rounded-lg overflow-x-auto whitespace-pre-wrap bg-zinc-100 border border-zinc-200 text-amber-700 dark:bg-zinc-950 dark:border-zinc-800 dark:text-amber-400">
-                      {challenge.solution}
-                    </pre>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setRevealedSolution(true)}
-                    className="w-full text-left p-3 flex justify-between items-center hover:bg-muted/40 transition-colors text-rose-500/80 hover:text-rose-500 font-semibold"
-                  >
-                    <span>Reveal Official Solution</span>
-                    <ChevronDown className="h-4 w-4 text-rose-400" />
-                  </button>
-                )}
+          {/* Solved Status Banner */}
+          {solved && (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 flex items-center justify-between gap-3 text-emerald-600 dark:text-emerald-400">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <CheckCircle className="h-4 w-4 shrink-0 text-emerald-500" />
+                <span>
+                  {challenge.isTopicEnd
+                    ? `🎉 ${challenge.language.toUpperCase()} Section Completed! You earned ${challenge.xp} XP.`
+                    : `Challenge Completed! You earned ${challenge.xp} XP.`}
+                </span>
               </div>
+              {challenge.nextChallengeId && (
+                <button
+                  onClick={() => router.push(`/challenge/${challenge.nextChallengeId}`)}
+                  className="inline-flex items-center gap-1 text-xs font-extrabold px-3 py-1.5 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shrink-0 shadow-sm"
+                >
+                  Next Challenge
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right Pane: Code Editor + Preview/Console */}

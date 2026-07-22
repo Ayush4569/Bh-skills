@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2,
   Lock,
@@ -18,6 +18,9 @@ import {
 } from 'lucide-react';
 import { useProgress } from '@/components/progress-provider';
 import { LoadingScreen } from '@/components/loader';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface Challenge {
   _id: string;
@@ -284,174 +287,53 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
               <div key={topicIdx} className="space-y-12 relative z-10">
                 {/* Main Topic Center Card */}
                 <div className="relative flex justify-center w-full z-20">
-                  <div className="w-full md:max-w-xl ml-12 md:ml-0 bg-card border-2 border-indigo-500/20 rounded-3xl p-6 shadow-md flex flex-col items-center text-center space-y-4 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
+                  <div className="w-full md:max-w-md ml-12 md:ml-0 bg-card border border-border/80 rounded-3xl p-5 shadow-sm relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
                     {/* Decorative background glow */}
                     <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full" />
                     
-                    {/* Icon Box */}
-                    <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/10">
-                      {course.slug === 'web' ? (
-                        topicIdx === 0 ? <Globe className="h-7 w-7" /> :
-                        topicIdx === 1 ? <Layers className="h-7 w-7" /> :
-                        <Terminal className="h-7 w-7" />
-                      ) : (
-                        <Terminal className="h-7 w-7" />
-                      )}
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                          {topic.badge}
-                        </span>
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-muted text-muted-foreground border">
-                          {topic.duration}
-                        </span>
+                    <div className="flex items-start gap-4">
+                      {/* Icon Box */}
+                      <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/10 shrink-0">
+                        {course.slug === 'web' ? (
+                          topicIdx === 0 ? <Globe className="h-5 w-5" /> :
+                          topicIdx === 1 ? <Layers className="h-5 w-5" /> :
+                          <Terminal className="h-5 w-5" />
+                        ) : (
+                          <Terminal className="h-5 w-5" />
+                        )}
                       </div>
-                      <h2 className="text-2xl font-black tracking-tight text-foreground pt-2">
-                        {topic.title}
-                      </h2>
-                      <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
-                        {topic.description}
-                      </p>
+
+                      <div className="space-y-1.5 flex-1 text-left">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h2 className="text-base font-extrabold tracking-tight text-foreground leading-snug">
+                            {topic.title}
+                          </h2>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                            {topic.badge}
+                          </span>
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/40">
+                            {topic.duration}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {topic.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Subtopics of this Main Topic */}
                 <div className="space-y-10 relative">
-                  {topic.subtopics.map((subtopic, subIdx) => {
-                    const isRight = subIdx % 2 === 0;
-
-                    // Calculate subtopic completion progress
-                    const subChallenges = subtopic.challenges;
-                    const totalSub = subChallenges.length;
-                    const solvedSub = subChallenges.filter(c => progress?.completedChallenges?.includes(c._id)).length;
-                    const isSubCompleted = totalSub > 0 && solvedSub === totalSub;
-                    // For testing, everything is unlocked by default, but let's calculate based on progress
-                    const isSubLocked = false; 
-
-                    return (
-                      <div
-                        key={subIdx}
-                        className={`relative flex items-center w-full min-h-[150px] ${
-                          isRight ? 'md:flex-row-reverse' : 'md:flex-row'
-                        }`}
-                      >
-                        {/* Horizontal Connector Line */}
-                        <div className={`hidden md:block absolute top-1/2 -translate-y-1/2 h-0.5 bg-border/60 z-0 ${
-                          isRight ? 'left-1/2 w-12' : 'right-1/2 w-12'
-                        }`} />
-                        <div className="block md:hidden absolute left-6 w-8 h-0.5 bg-border/60 top-1/2 -translate-y-1/2 z-0" />
-
-                        {/* Interactive Timeline Circle Node */}
-                        <div className="absolute left-6 md:left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center z-20 bg-background border border-border">
-                          {isSubCompleted ? (
-                            <div className="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center text-white border border-background shadow-sm">
-                              <Check className="h-3.5 w-3.5 stroke-[3]" />
-                            </div>
-                          ) : isSubLocked ? (
-                            <div className="h-5 w-5 rounded-full bg-muted border border-border/80 flex items-center justify-center text-muted-foreground/60">
-                              <Lock className="h-2.5 w-2.5" />
-                            </div>
-                          ) : (
-                            <div className={`h-6 w-6 rounded-full border-2 ${isWeb ? 'border-amber-500 bg-amber-500/10' : 'border-indigo-600 bg-indigo-500/10'} flex items-center justify-center relative shadow-sm`}>
-                              <div className={`h-2 w-2 rounded-full ${isWeb ? 'bg-amber-500' : 'bg-indigo-600'} animate-ping absolute`} />
-                              <div className={`h-2 w-2 rounded-full ${isWeb ? 'bg-amber-500' : 'bg-indigo-600'} relative`} />
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Subtopic Card wrapper */}
-                        <div className="w-full md:w-[calc(50%-3rem)] ml-14 md:ml-0">
-                          <motion.div
-                            whileHover={{ scale: 1.01 }}
-                            className={`rounded-2xl border p-6 transition-all duration-300 relative bg-card shadow-sm border-border`}
-                          >
-                            <div className="space-y-2">
-                              <h3 className="text-base font-bold text-foreground leading-snug">
-                                {subtopic.title}
-                              </h3>
-                              <p className="text-xs text-muted-foreground leading-relaxed">
-                                {subtopic.description}
-                              </p>
-
-                              {/* Challenges Checklist inside the Subtopic Card */}
-                              <div className="mt-4 pt-4 border-t border-border/40 space-y-2">
-                                {subtopic.challenges.map((chal) => {
-                                  const isCompleted = progress?.completedChallenges?.includes(chal._id) || false;
-                                  const isUnlocked = progress?.unlockedChallenges?.includes(chal._id) || false;
-                                  // For testing, unlock all challenges
-                                  const isLocked = false;
-                                  const isNextUp = isUnlocked && !isCompleted;
-
-                                  // Difficulty badge style map
-                                  const difficultyBadgeColor = {
-                                    easy: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15',
-                                    medium: 'bg-amber-500/10 text-amber-500 border-amber-500/15',
-                                    hard: 'bg-rose-500/10 text-rose-500 border-rose-500/15',
-                                    miniproject: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/15',
-                                  }[chal.difficulty];
-
-                                  return (
-                                    <Link
-                                      key={chal._id}
-                                      href={`/challenge/${chal._id}`}
-                                      className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 group/item ${
-                                        isCompleted
-                                          ? 'border-emerald-500/10 bg-emerald-500/[0.01] hover:bg-emerald-500/[0.03]'
-                                          : isNextUp
-                                          ? isWeb
-                                            ? 'border-amber-500/30 bg-amber-500/[0.01] hover:border-amber-500 hover:bg-amber-500/[0.03]'
-                                            : 'border-indigo-500/30 bg-indigo-500/[0.01] hover:border-indigo-500 hover:bg-indigo-500/[0.03]'
-                                          : 'border-border/60 hover:border-border hover:bg-muted/40'
-                                      }`}
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        {/* Status indicator on the left */}
-                                        {isCompleted ? (
-                                          <div className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
-                                            <Check className="h-3 w-3 stroke-[3]" />
-                                          </div>
-                                        ) : isLocked ? (
-                                          <div className="h-5 w-5 rounded-full bg-muted border border-border/80 flex items-center justify-center text-muted-foreground/60 shrink-0">
-                                            <Lock className="h-2.5 w-2.5" />
-                                          </div>
-                                        ) : (
-                                          <div className={`h-5 w-5 rounded-full border-2 ${isWeb ? 'border-amber-500/60 group-hover/item:border-amber-500' : 'border-indigo-500/60 group-hover/item:border-indigo-500'} bg-transparent shrink-0`} />
-                                        )}
-
-                                        <span className="text-sm font-bold text-foreground/90 group-hover/item:text-foreground transition-colors">
-                                          {chal.title}
-                                        </span>
-
-                                        {isNextUp && (
-                                          <span className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${isWeb ? 'bg-amber-500/15 text-amber-500 border border-amber-500/15' : 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/15'}`}>
-                                            <Sparkles className="h-2 w-2 animate-bounce" />
-                                            Next Up
-                                          </span>
-                                        )}
-                                      </div>
-
-                                      <div className="flex items-center gap-2">
-                                        <span className={`text-[9px] font-extrabold uppercase border px-2 py-0.5 rounded-md ${difficultyBadgeColor}`}>
-                                          {chal.difficulty}
-                                        </span>
-                                        <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover/item:text-foreground/60 transition-colors" />
-                                      </div>
-                                    </Link>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          </motion.div>
-                        </div>
-
-                        {/* Blank spacer placeholder on desktop layout */}
-                        <div className="hidden md:block w-[calc(50%-3rem)]" />
-                      </div>
-                    );
-                  })}
+                  {topic.subtopics.map((subtopic, subIdx) => (
+                    <SubtopicTimelineCard
+                      key={subIdx}
+                      subtopic={subtopic}
+                      subIdx={subIdx}
+                      isWeb={isWeb}
+                      progress={progress}
+                    />
+                  ))}
                 </div>
               </div>
             );
@@ -461,3 +343,201 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
     </div>
   );
 }
+
+interface SubTopicItem {
+  title: string;
+  description: string;
+  challenges: Challenge[];
+}
+
+function SubtopicTimelineCard({
+  subtopic,
+  subIdx,
+  isWeb,
+  progress,
+}: {
+  subtopic: SubTopicItem;
+  subIdx: number;
+  isWeb: boolean;
+  progress: any;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+  const isRight = subIdx % 2 === 0;
+
+  // Calculate subtopic completion progress
+  const subChallenges = subtopic.challenges;
+  const totalSub = subChallenges.length;
+  const solvedSub = subChallenges.filter((c) => progress?.completedChallenges?.includes(c._id)).length;
+  const isSubCompleted = totalSub > 0 && solvedSub === totalSub;
+
+  return (
+    <div
+      className={`relative flex items-center w-full min-h-[120px] ${
+        isRight ? 'md:flex-row-reverse' : 'md:flex-row'
+      }`}
+    >
+      {/* Horizontal Connector Line */}
+      <div
+        className={`hidden md:block absolute top-1/2 -translate-y-1/2 h-0.5 bg-border/60 z-0 ${
+          isRight ? 'left-1/2 w-12' : 'right-1/2 w-12'
+        }`}
+      />
+      <div className="block md:hidden absolute left-6 w-8 h-0.5 bg-border/60 top-1/2 -translate-y-1/2 z-0" />
+
+      {/* Interactive Timeline Circle Node */}
+      <div
+        className={`absolute left-6 md:left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center z-20 bg-background border transition-all duration-300 ${
+          isHovered
+            ? isWeb
+              ? 'border-amber-500 ring-4 ring-amber-500/20 scale-110 shadow-md'
+              : 'border-indigo-600 ring-4 ring-indigo-500/20 scale-110 shadow-md'
+            : 'border-border'
+        }`}
+      >
+        {isSubCompleted ? (
+          <div className="h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center text-white border border-background shadow-sm">
+            <Check className="h-3.5 w-3.5 stroke-[3]" />
+          </div>
+        ) : (
+          <div
+            className={`h-6 w-6 rounded-full border-2 ${
+              isWeb ? 'border-amber-500 bg-amber-500/10' : 'border-indigo-600 bg-indigo-500/10'
+            } flex items-center justify-center relative shadow-sm`}
+          >
+            <div
+              className={`h-2 w-2 rounded-full ${
+                isWeb ? 'bg-amber-500' : 'bg-indigo-600'
+              } animate-ping absolute`}
+            />
+            <div
+              className={`h-2 w-2 rounded-full ${
+                isWeb ? 'bg-amber-500' : 'bg-indigo-600'
+              } relative`}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Subtopic Card wrapper */}
+      <div className="w-full md:w-[420px] ml-14 md:ml-0">
+        <motion.div
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          onClick={() => setIsHovered(!isHovered)}
+          whileHover={{ scale: 1.01 }}
+          className={`rounded-2xl border p-4 sm:p-5 transition-all duration-300 relative bg-card shadow-sm cursor-pointer ${
+            isHovered
+              ? isWeb
+                ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.08)]'
+                : 'border-indigo-500/60 shadow-[0_0_20px_rgba(99,102,241,0.08)]'
+              : 'border-border/80'
+          }`}
+        >
+          <div className="space-y-1">
+            <div className="flex justify-between items-start">
+              <h3 className="text-sm font-bold text-foreground leading-snug">
+                {subtopic.title}
+              </h3>
+              <span className="text-[10px] font-bold text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full border border-border/40 ml-2 shrink-0">
+                {totalSub} {totalSub === 1 ? 'problem' : 'problems'}
+              </span>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {subtopic.description}
+            </p>
+
+            {/* Collapsible Challenges Checklist - hidden by default, visible when hovered/clicked (Image 4) */}
+            <AnimatePresence>
+              {isHovered && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeInOut' }}
+                  className="mt-4 pt-4 border-t border-border/40 space-y-2 overflow-hidden"
+                >
+                  {subtopic.challenges.map((chal) => {
+                    const isCompleted = progress?.completedChallenges?.includes(chal._id) || false;
+                    const isUnlocked = progress?.unlockedChallenges?.includes(chal._id) || false;
+                    const isNextUp = isUnlocked && !isCompleted;
+
+                    const difficultyBadgeColor = {
+                      easy: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/15',
+                      medium: 'bg-amber-500/10 text-amber-500 border-amber-500/15',
+                      hard: 'bg-rose-500/10 text-rose-500 border-rose-500/15',
+                      miniproject: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/15',
+                    }[chal.difficulty];
+
+                    return (
+                      <Link
+                        key={chal._id}
+                        href={`/challenge/${chal._id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 group/item ${
+                          isCompleted
+                            ? 'border-emerald-500/10 bg-emerald-500/[0.01] hover:bg-emerald-500/[0.03]'
+                            : isNextUp
+                            ? isWeb
+                              ? 'border-amber-500/30 bg-amber-500/[0.01] hover:border-amber-500 hover:bg-amber-500/[0.03]'
+                              : 'border-indigo-500/30 bg-indigo-500/[0.01] hover:border-indigo-500 hover:bg-indigo-500/[0.03]'
+                            : 'border-border/60 hover:border-border hover:bg-muted/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isCompleted ? (
+                            <div className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-sm shrink-0">
+                              <Check className="h-3 w-3 stroke-[3]" />
+                            </div>
+                          ) : (
+                            <div
+                              className={`h-5 w-5 rounded-full border-2 ${
+                                isWeb
+                                  ? 'border-amber-500/60 group-hover/item:border-amber-500'
+                                  : 'border-indigo-500/60 group-hover/item:border-indigo-500'
+                              } bg-transparent shrink-0`}
+                            />
+                          )}
+
+                          <span className="text-sm font-bold text-foreground/90 group-hover/item:text-foreground transition-colors">
+                            {chal.title}
+                          </span>
+
+                          {isNextUp && (
+                            <span
+                              className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${
+                                isWeb
+                                  ? 'bg-amber-500/15 text-amber-500 border border-amber-500/15'
+                                  : 'bg-indigo-500/15 text-indigo-500 border border-indigo-500/15'
+                              }`}
+                            >
+                              <Sparkles className="h-2 w-2 animate-bounce" />
+                              Next Up
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`text-[9px] font-extrabold uppercase border px-2 py-0.5 rounded-md ${difficultyBadgeColor}`}
+                          >
+                            {chal.difficulty}
+                          </span>
+                          <ChevronRight className="h-4 w-4 text-muted-foreground/40 group-hover/item:text-foreground/60 transition-colors" />
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Blank spacer placeholder on desktop layout */}
+      <div className="hidden md:block flex-1" />
+    </div>
+  );
+}
+

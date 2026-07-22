@@ -15,8 +15,22 @@ export async function GET(
       return NextResponse.json({ error: 'Challenge not found' }, { status: 404 });
     }
 
-    return NextResponse.json(challenge);
+    let isTopicEnd = false;
+    if (!challenge.nextChallengeId) {
+      isTopicEnd = true;
+    } else {
+      const nextChallenge = await Challenge.findById(challenge.nextChallengeId);
+      if (nextChallenge && nextChallenge.language !== challenge.language) {
+        isTopicEnd = true;
+      }
+    }
+
+    return NextResponse.json({
+      ...challenge.toObject(),
+      isTopicEnd,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
