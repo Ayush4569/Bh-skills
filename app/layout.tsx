@@ -6,10 +6,7 @@ import { ProgressProvider } from "@/components/progress-provider";
 import Navbar from "@/components/navbar";
 import { cn } from "@/lib/utils";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -36,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, geistMono.variable, "font-sans", inter.variable)}
+      className={cn("h-full", "antialiased", geist.variable, geistMono.variable, "font-sans", geist.variable)}
       suppressHydrationWarning
     >
       <head>

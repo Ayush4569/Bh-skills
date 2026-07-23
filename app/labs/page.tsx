@@ -335,7 +335,7 @@ export default function LabsSelection() {
                       href={`/labs/${topic.courseSlug}#module-${topic.moduleId}`}
                       className="group flex"
                     >
-                      <Card className="w-full flex flex-col p-4 sm:p-5 min-h-[190px] hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.06)] transition-all duration-300">
+                      <Card className="w-full flex flex-col p-4 sm:p-5 minh-[190px] border hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.06)] transition-all duration-300">
                         <div className="flex-1 space-y-2">
                           {/* Icon */}
                           <div className="inline-flex items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/10 p-2">
@@ -410,7 +410,7 @@ export default function LabsSelection() {
                   return (
                     <Card
                       key={course._id}
-                      className="group relative p-8 flex flex-col justify-between hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.06)] transition-all duration-300"
+                      className="group relative p-8  flex flex-col justify-between hover:border-indigo-500/50 hover:shadow-[0_0_20px_rgba(99,102,241,0.06)] transition-all duration-300"
                     >
                       <div className="space-y-4">
                         <div className="flex items-center gap-4">

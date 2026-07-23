@@ -56,6 +56,44 @@ export default function Dashboard() {
   const levelProgressPercent = Math.min((xpInCurrentLevel / 150) * 100, 100);
   const xpNeededForNextLevel = 150 - xpInCurrentLevel;
 
+  // Compute real-time weekly activity from xpLogs
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const now = new Date();
+  const currentDayIdx = (now.getDay() + 6) % 7; // 0 = Mon, 6 = Sun
+
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - currentDayIdx);
+  monday.setHours(0, 0, 0, 0);
+
+  const weekStats = days.map((dayName, idx) => {
+    const dayDate = new Date(monday);
+    dayDate.setDate(monday.getDate() + idx);
+
+    const startOfDay = new Date(dayDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(dayDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const dayLogs = (xpLogs || []).filter((log) => {
+      const logDate = new Date(log.createdAt);
+      return logDate >= startOfDay && logDate <= endOfDay;
+    });
+
+    const count = dayLogs.length;
+    const xp = dayLogs.reduce((sum, l) => sum + (l.amount || 0), 0);
+
+    return {
+      day: dayName,
+      count,
+      xp,
+      isToday: idx === currentDayIdx,
+    };
+  });
+
+  const maxCount = Math.max(...weekStats.map((w) => w.count), 1);
+  const activeDaysCount = weekStats.filter((w) => w.count > 0).length;
+
   const handleResetProgress = () => {
     setConfirmModal({
       isOpen: true,
@@ -112,7 +150,7 @@ export default function Dashboard() {
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* XP & Level Progress */}
-        <Card className="col-span-1 md:col-span-2 p-6 flex flex-col justify-between">
+        <Card className="col-span-1 md:col-span-2 p-6 flex flex-col justify-between border-border/60 bg-card">
           <div className="flex justify-between items-start">
             <div>
               <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Current Level</span>
@@ -147,14 +185,14 @@ export default function Dashboard() {
 
         {/* Overview Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <Card className="p-5 flex flex-col justify-between">
+          <Card className="p-5 flex flex-col justify-between border-border/60 bg-card">
             <span className="text-xs font-semibold text-muted-foreground uppercase">Challenges Completed</span>
             <span className="text-3xl font-extrabold text-foreground mt-2">
               {progress?.completedChallenges?.length || 0}
             </span>
             <span className="text-[10px] text-muted-foreground mt-1">unlocked the next step</span>
           </Card>
-          <Card className="p-5 flex flex-col justify-between">
+          <Card className="p-5 flex flex-col justify-between border-border/60 bg-card">
             <span className="text-xs font-semibold text-muted-foreground uppercase">Total Submissions</span>
             <span className="text-3xl font-extrabold text-foreground mt-2">{attemptsCount}</span>
             <span className="text-[10px] text-muted-foreground mt-1">all run attempts logged</span>
@@ -168,16 +206,16 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-8">
           {/* Active Tracks */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold flex items-center gap-2">
+            <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
               <BookOpen className="h-5 w-5 text-amber-500" />
               Active Learning Paths
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Web Path Card */}
-              <Card className="group p-6 flex flex-col justify-between hover:border-amber-500/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.03)] transition-all">
+              <Card className="group p-6 flex flex-col justify-between border-border/60 bg-card hover:border-amber-500/40 hover:shadow-[0_0_15px_rgba(245,158,11,0.03)] transition-all">
                 <div>
-                  <CardTitle className="text-lg font-bold">Web Development</CardTitle>
+                  <CardTitle className="text-lg font-bold text-foreground">Web Development</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     HTML Structure, CSS Styling, Box Model, Flexbox, and JavaScript interaction challenges.
                   </CardDescription>
@@ -192,9 +230,9 @@ export default function Dashboard() {
               </Card>
 
               {/* Python Path Card */}
-              <Card className="group p-6 flex flex-col justify-between hover:border-indigo-500/40 hover:shadow-[0_0_15px_rgba(99,102,241,0.03)] transition-all">
+              <Card className="group p-6 flex flex-col justify-between border-border/60 bg-card hover:border-indigo-500/40 hover:shadow-[0_0_15px_rgba(99,102,241,0.03)] transition-all">
                 <div>
-                  <CardTitle className="text-lg font-bold">Python Programming</CardTitle>
+                  <CardTitle className="text-lg font-bold text-foreground">Python Programming</CardTitle>
                   <CardDescription className="text-sm text-muted-foreground mt-2 leading-relaxed">
                     Logic, functions, variables, list filters, classes, and browser-based Pyodide exceptions.
                   </CardDescription>
@@ -210,32 +248,52 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Coding Time Graph */}
-          <Card className="p-6 space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold flex items-center gap-2">
-                <Activity className="h-5 w-5 text-indigo-500" />
-                Weekly Activity (Mock)
-              </h3>
-              <Badge variant="outline" className="text-xs font-semibold">Updated in real-time</Badge>
+          {/* Real-time Coding Activity Graph */}
+          <Card className="p-6 space-y-4 border-border/60 bg-card">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
+                  <Activity className="h-5 w-5 text-indigo-500" />
+                  Weekly Activity
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Real-time problem solving activity for the current week
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-bold gap-1 text-emerald-500 border-emerald-500/30 bg-emerald-500/10">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {activeDaysCount} / 7 Days Active
+                </Badge>
+              </div>
             </div>
 
-            {/* Custom SVG line-bar graph */}
+            {/* Real-time bar graph */}
             <div className="h-48 w-full flex items-end gap-3 pt-6 border-b border-border/30">
-              {[25, 45, 15, 60, 80, 50, 95].map((val, idx) => {
-                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              {weekStats.map((val, idx) => {
+                const heightPercent = val.count > 0 ? Math.max((val.count / maxCount) * 100, 15) : 4;
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
-                    <div className="text-[10px] font-bold text-muted-foreground">{val}m</div>
-                    <div className="w-full bg-muted/65 rounded-t-lg overflow-hidden h-[80%] relative">
+                    <div className="text-[10px] font-bold text-muted-foreground">
+                      {val.count > 0 ? `${val.count} solved` : '-'}
+                    </div>
+                    <div className="w-full bg-muted/40 rounded-t-lg overflow-hidden h-[80%] relative flex items-end">
                       <motion.div
                         initial={{ height: 0 }}
-                        animate={{ height: `${val}%` }}
-                        transition={{ duration: 0.8, delay: idx * 0.05 }}
-                        className="w-full bg-gradient-to-t from-indigo-600 to-amber-500 absolute bottom-0 rounded-t-lg"
+                        animate={{ height: `${heightPercent}%` }}
+                        transition={{ duration: 0.6, delay: idx * 0.05 }}
+                        className={`w-full absolute bottom-0 rounded-t-lg transition-colors ${
+                          val.isToday
+                            ? 'bg-gradient-to-t from-indigo-600 to-amber-500 shadow-[0_0_10px_rgba(99,102,241,0.4)]'
+                            : val.count > 0
+                            ? 'bg-gradient-to-t from-indigo-700/80 to-indigo-500/80'
+                            : 'bg-muted-foreground/20'
+                        }`}
                       />
                     </div>
-                    <span className="text-xs font-semibold text-muted-foreground">{days[idx]}</span>
+                    <span className={`text-xs font-bold ${val.isToday ? 'text-indigo-400' : 'text-muted-foreground'}`}>
+                      {val.day}
+                    </span>
                   </div>
                 );
               })}
@@ -247,7 +305,7 @@ export default function Dashboard() {
         <div className="space-y-8">
           {/* Achievements Grid */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold flex items-center gap-2">
+            <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
               <Trophy className="h-5 w-5 text-amber-500" />
               Achievements
             </h3>
@@ -263,15 +321,15 @@ export default function Dashboard() {
                     key={ach._id}
                     className={`flex items-center gap-4 rounded-xl border p-3.5 transition-all ${
                       unlocked
-                        ? 'border-emerald-500/20 bg-emerald-500/5'
-                        : 'border-border/50 bg-card'
+                        ? 'border-emerald-500/40 bg-card shadow-[0_0_15px_rgba(16,185,129,0.06)]'
+                        : 'border-border/60 bg-card'
                     }`}
                   >
                     <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
                         unlocked
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'bg-muted text-muted-foreground'
+                          ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                          : 'bg-muted/40 border-border/40 text-muted-foreground/60'
                       }`}
                     >
                       {unlocked ? <Icon className="h-5 w-5" /> : <Lock className="h-5 w-5 text-muted-foreground/60" />}
@@ -284,7 +342,7 @@ export default function Dashboard() {
                       {unlocked ? (
                         <Badge variant="success" className="text-[10px] font-bold uppercase">Unlocked</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                        <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground">
                           {ach.xpRequired} XP
                         </Badge>
                       )}
@@ -296,39 +354,60 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity (XP Logs) */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Activity className="h-5 w-5 text-amber-500" />
-              XP Transaction History
-            </h3>
+          <Card className="p-5 space-y-4 border-border/60 bg-card">
+            <div className="flex justify-between items-center pb-2 border-b border-border/40">
+              <h3 className="text-base font-bold flex items-center gap-2 text-foreground">
+                <Activity className="h-4.5 w-4.5 text-amber-500" />
+                XP Transaction History
+              </h3>
+              <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground">
+                {xpLogs.length} {xpLogs.length === 1 ? 'record' : 'records'}
+              </Badge>
+            </div>
 
             {xpLogs.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+              <div className="rounded-xl border border-dashed border-border/60 p-6 text-center text-xs text-muted-foreground">
                 No activity recorded yet. Start solving challenges to earn XP!
               </div>
             ) : (
-              <div className="relative border-l border-border/50 ml-3.5 pl-5 space-y-4">
-                {xpLogs.map((log) => (
-                  <div key={log._id} className="relative">
-                    {/* Circle timeline indicator */}
-                    <div className="absolute -left-[27.5px] top-1.5 h-3.5 w-3.5 rounded-full border border-amber-500 bg-background flex items-center justify-center">
-                      <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                    </div>
-                    <div className="flex justify-between items-start gap-4">
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{log.reason}</p>
-                        <span className="text-[10px] text-muted-foreground">
-                          {new Date(log.createdAt).toLocaleDateString()} at{' '}
-                          {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </span>
+              <div className="max-h-[340px] overflow-y-auto pr-1 space-y-2.5">
+                {xpLogs.map((log) => {
+                  const isSkipped = log.reason.toLowerCase().includes('skipped');
+                  return (
+                    <div
+                      key={log._id}
+                      className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-muted/20 hover:bg-muted/40 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border ${
+                            isSkipped
+                              ? 'bg-amber-500/15 border-amber-500/30 text-amber-500'
+                              : 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                          }`}
+                        >
+                          {isSkipped ? <Zap className="h-4 w-4" /> : <Award className="h-4 w-4" />}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-foreground truncate">{log.reason}</p>
+                          <span className="text-[10px] text-muted-foreground">
+                            {new Date(log.createdAt).toLocaleDateString()} at{' '}
+                            {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
                       </div>
-                      <Badge variant="warning" className="text-xs font-extrabold">+{log.amount} XP</Badge>
+                      <Badge
+                        variant={log.amount > 0 ? 'success' : 'outline'}
+                        className="text-[10px] font-bold shrink-0 ml-2"
+                      >
+                        +{log.amount} XP
+                      </Badge>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
 

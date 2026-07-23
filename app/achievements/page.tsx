@@ -75,8 +75,8 @@ export default function AchievementsPage() {
               <Card
                 className={`group h-full p-6 flex flex-col justify-between transition-all ${
                   unlocked
-                    ? 'border-emerald-500/20 bg-emerald-500/5 shadow-[0_0_15px_rgba(16,185,129,0.03)] hover:border-emerald-500/30'
-                    : 'border-border/50 bg-card/60'
+                    ? 'border-emerald-500/40 bg-card shadow-[0_0_20px_rgba(16,185,129,0.08)] hover:border-emerald-500/60'
+                    : 'border-border/60 bg-card hover:border-border'
                 }`}
               >
                 <div className="space-y-4">
@@ -84,8 +84,8 @@ export default function AchievementsPage() {
                   <div
                     className={`flex h-14 w-14 items-center justify-center rounded-2xl border transition-transform group-hover:scale-105 ${
                       unlocked
-                        ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-500'
-                        : 'bg-muted/50 border-border/40 text-muted-foreground/50'
+                        ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                        : 'bg-muted/40 border-border/40 text-muted-foreground/50'
                     }`}
                   >
                     {unlocked ? (
@@ -96,7 +96,7 @@ export default function AchievementsPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <CardTitle className="text-lg font-bold flex items-center gap-1.5">
+                    <CardTitle className="text-lg font-bold flex items-center gap-1.5 text-foreground">
                       {ach.title}
                       {unlocked && (
                         <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
@@ -114,7 +114,7 @@ export default function AchievementsPage() {
                   {unlocked ? (
                     <Badge variant="success" className="text-[10px] font-bold uppercase">Unlocked</Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] font-bold uppercase">
+                    <Badge variant="outline" className="text-[10px] font-bold uppercase text-muted-foreground">
                       {ach.xpRequired} XP required
                     </Badge>
                   )}

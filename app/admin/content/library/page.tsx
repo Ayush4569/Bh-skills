@@ -123,7 +123,7 @@ export default function AdminDashboard() {
           </p>
         </div>
         <Link href="/admin/challenge/new">
-          <Button className='rounded-md bg-[#522BFF] text-white' >
+          <Button className="gap-2 rounded-md font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
             <Plus className="h-4 w-4" />
             Create Challenge
           </Button>
@@ -132,17 +132,17 @@ export default function AdminDashboard() {
 
       {/* Metrics overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card className="p-5">
-          <span className="text-xs font-semibold text-muted-foreground uppercase">Total Challenges</span>
-          <p className="text-2xl font-extrabold text-foreground mt-1">{challenges.length}</p>
+        <Card className="p-5 border-border/60 bg-card">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total Challenges</span>
+          <p className="text-3xl font-extrabold text-foreground mt-1">{challenges.length}</p>
         </Card>
-        <Card className="p-5">
-          <span className="text-xs font-semibold text-emerald-500 uppercase">Published Live</span>
-          <p className="text-2xl font-extrabold text-emerald-500 mt-1">{publishedCount}</p>
+        <Card className="p-5 border-border/60 bg-card">
+          <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">Published Live</span>
+          <p className="text-3xl font-extrabold text-emerald-500 mt-1">{publishedCount}</p>
         </Card>
-        <Card className="p-5">
-          <span className="text-xs font-semibold text-amber-500 uppercase">Unpublished Drafts</span>
-          <p className="text-2xl font-extrabold text-amber-500 mt-1">{draftCount}</p>
+        <Card className="p-5 border-border/60 bg-card">
+          <span className="text-xs font-bold text-amber-500 uppercase tracking-wider">Unpublished Drafts</span>
+          <p className="text-3xl font-extrabold text-amber-500 mt-1">{draftCount}</p>
         </Card>
       </div>
 
@@ -155,11 +155,11 @@ export default function AdminDashboard() {
       )}
 
       {/* Table list */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden border-border/60 bg-card">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="border-b border-border/40 bg-muted/40 text-muted-foreground font-semibold text-xs uppercase tracking-wider">
+              <tr className="border-b border-border/60 bg-muted/40 text-muted-foreground font-bold text-xs uppercase tracking-wider">
                 <th className="p-4">Challenge Title</th>
                 <th className="p-4">Language</th>
                 <th className="p-4">Difficulty</th>
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
                 </tr>
               ) : (
                 challenges.map((chal) => (
-                  <tr key={chal._id} className="hover:bg-muted/15 transition-colors">
+                  <tr key={chal._id} className="hover:bg-muted/20 transition-colors border-b border-border/30">
                     <td className="p-4 font-bold text-foreground">{chal.title}</td>
                     <td className="p-4">
                       <span className="inline-flex items-center gap-1 uppercase text-xs">
