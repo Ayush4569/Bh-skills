@@ -447,6 +447,206 @@ async function seed() {
   }));
 
   htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule1._id,
+    title: 'Subscript and Superscript',
+    description: `### Subscript and Superscript\n\nUse \`<sub>\` for subscript text (like chemical formulas) and \`<sup>\` for superscript text (like math exponents).\n\n### Objective\nCreate a paragraph \`<p id="formula">H<sub>2</sub>O</p>\` and a paragraph \`<p id="exponent">E = mc<sup>2</sup></p>\`.`,
+    language: 'html',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<p id="formula">H<sub>2</sub>O</p>\n<p id="exponent">E = mc<sup>2</sup></p>`,
+    validationRules: [
+      {
+        id: 'formula_sub',
+        description: 'Verify paragraph #formula contains a <sub> element with text "2".',
+        checkFn: `document.querySelector('p#formula > sub')?.textContent?.trim() === '2'`,
+      },
+      {
+        id: 'exponent_sup',
+        description: 'Verify paragraph #exponent contains a <sup> element with text "2".',
+        checkFn: `document.querySelector('p#exponent > sup')?.textContent?.trim() === '2'`,
+      },
+    ],
+    hints: ['Use `<sub>2</sub>` inside `<p id="formula">` and `<sup>2</sup>` inside `<p id="exponent">`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule1._id,
+    title: 'Blockquote Citation',
+    description: `### Quotations & Citations\n\nThe \`<blockquote>\` tag represents a section quoted from another source. Use \`<cite>\` inside it to cite the author.\n\n### Objective\nCreate a \`<blockquote>\` containing the quote text \`Knowledge is power.\` and a \`<cite>\` tag with \`Francis Bacon\`.`,
+    language: 'html',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<blockquote>Knowledge is power. <cite>Francis Bacon</cite></blockquote>`,
+    validationRules: [
+      {
+        id: 'blockquote_exists',
+        description: 'Verify <blockquote> exists.',
+        checkFn: `document.querySelector('blockquote') !== null`,
+      },
+      {
+        id: 'cite_text',
+        description: 'Verify <cite> element inside blockquote contains "Francis Bacon".',
+        checkFn: `document.querySelector('blockquote cite')?.textContent?.trim() === 'Francis Bacon'`,
+      },
+    ],
+    hints: ['Wrap the author name inside `<cite>Author</cite>`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule1._id,
+    title: 'Inline Code & Preformatted Text',
+    description: `### Code Blocks\n\nThe \`<pre>\` tag preserves spaces and line breaks. Combine it with \`<code>\` to display formatted source code snippets.\n\n### Objective\nCreate a \`<pre>\` element containing a \`<code>\` element with text \`const x = 10;\`.`,
+    language: 'html',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<pre><code>const x = 10;</code></pre>`,
+    validationRules: [
+      {
+        id: 'pre_code_exists',
+        description: 'Verify <pre> containing <code> exists.',
+        checkFn: `document.querySelector('pre > code') !== null`,
+      },
+      {
+        id: 'code_content',
+        description: 'Verify code snippet text is "const x = 10;".',
+        checkFn: `document.querySelector('pre > code')?.textContent?.trim() === 'const x = 10;'`,
+      },
+    ],
+    hints: ['Place `<code>const x = 10;</code>` inside `<pre></pre>`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule2._id,
+    title: 'HTML Audio Element',
+    description: `### Media Elements\n\nThe \`<audio>\` tag embeds sound content. Use the \`controls\` attribute to display playback buttons.\n\n### Objective\nCreate an \`<audio id="audio-player" controls>\` with a \`<source src="song.mp3" type="audio/mpeg">\`.`,
+    language: 'html',
+    difficulty: 'medium',
+    xp: 25,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<audio id="audio-player" controls>\n  <source src="song.mp3" type="audio/mpeg">\n</audio>`,
+    validationRules: [
+      {
+        id: 'audio_exists',
+        description: 'Verify <audio id="audio-player"> has controls attribute.',
+        checkFn: `document.querySelector('audio#audio-player[controls]') !== null`,
+      },
+      {
+        id: 'source_exists',
+        description: 'Verify source tag has src="song.mp3" and type="audio/mpeg".',
+        checkFn: `document.querySelector('audio#audio-player > source[src="song.mp3"][type="audio/mpeg"]') !== null`,
+      },
+    ],
+    hints: ['Add attribute `controls` inside `<audio>` opening tag.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule2._id,
+    title: 'Description Lists',
+    description: `### Definition & Description Lists\n\nA description list is created with \`<dl>\`, containing terms \`<dt>\` and descriptions \`<dd>\`.\n\n### Objective\nCreate a \`<dl id="terms-list">\` containing term \`<dt>HTML</dt>\` and description \`<dd>HyperText Markup Language</dd>\`.`,
+    language: 'html',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<dl id="terms-list">\n  <dt>HTML</dt>\n  <dd>HyperText Markup Language</dd>\n</dl>`,
+    validationRules: [
+      {
+        id: 'dl_exists',
+        description: 'Verify <dl id="terms-list"> exists.',
+        checkFn: `document.querySelector('dl#terms-list') !== null`,
+      },
+      {
+        id: 'dt_dd_correct',
+        description: 'Verify term <dt> is "HTML" and description <dd> is "HyperText Markup Language".',
+        checkFn: `document.querySelector('dl#terms-list > dt')?.textContent?.trim() === 'HTML' && document.querySelector('dl#terms-list > dd')?.textContent?.trim() === 'HyperText Markup Language'`,
+      },
+    ],
+    hints: ['Use `<dl id="terms-list">` with child elements `<dt>` and `<dd>`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule2._id,
+    title: 'Semantic Article and Section',
+    description: `### HTML5 Semantic Elements\n\nUse \`<article>\` for independent content and \`<section>\` for thematic grouping.\n\n### Objective\nCreate an \`<article id="blog-post">\` wrapping a \`<section class="post-content">\` with a paragraph \`<p>Hello World</p>\`.`,
+    language: 'html',
+    difficulty: 'medium',
+    xp: 25,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<article id="blog-post">\n  <section class="post-content">\n    <p>Hello World</p>\n  </section>\n</article>`,
+    validationRules: [
+      {
+        id: 'article_exists',
+        description: 'Verify <article id="blog-post"> exists.',
+        checkFn: `document.querySelector('article#blog-post') !== null`,
+      },
+      {
+        id: 'section_and_p',
+        description: 'Verify section.post-content exists inside article and contains <p>Hello World</p>.',
+        checkFn: `document.querySelector('article#blog-post > section.post-content > p')?.textContent?.trim() === 'Hello World'`,
+      },
+    ],
+    hints: ['Nesting: `<article id="blog-post"><section class="post-content"><p>Hello World</p></section></article>`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule3._id,
+    title: 'Fieldset and Legend',
+    description: `### Form Grouping\n\nGroup related controls using \`<fieldset>\` and provide a title caption with \`<legend>\`.\n\n### Objective\nCreate a \`<fieldset id="user-info">\` with a \`<legend>Personal Info</legend>\` and a text input \`<input type="text">\`.`,
+    language: 'html',
+    difficulty: 'medium',
+    xp: 25,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<fieldset id="user-info">\n  <legend>Personal Info</legend>\n  <input type="text" />\n</fieldset>`,
+    validationRules: [
+      {
+        id: 'fieldset_exists',
+        description: 'Verify <fieldset id="user-info"> exists.',
+        checkFn: `document.querySelector('fieldset#user-info') !== null`,
+      },
+      {
+        id: 'legend_and_input',
+        description: 'Verify <legend>Personal Info</legend> and <input type="text"> exist inside fieldset.',
+        checkFn: `document.querySelector('fieldset#user-info > legend')?.textContent?.trim() === 'Personal Info' && document.querySelector('fieldset#user-info > input[type="text"]') !== null`,
+      },
+    ],
+    hints: ['Place `<legend>` as the very first child of `<fieldset>`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
+    moduleId: htmlModule3._id,
+    title: 'Progress and Meter Elements',
+    description: `### Visual Indicators\n\n\`<progress>\` displays completion progress, while \`<meter>\` displays a measurement within a known range.\n\n### Objective\nCreate a \`<progress id="download-progress" value="70" max="100">\` and a \`<meter id="storage-meter" value="0.6">\`.`,
+    language: 'html',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<!-- Write your HTML code below -->\n`,
+    solution: `<progress id="download-progress" value="70" max="100"></progress>\n<meter id="storage-meter" value="0.6"></meter>`,
+    validationRules: [
+      {
+        id: 'progress_exists',
+        description: 'Verify progress element exists with value="70" and max="100".',
+        checkFn: `document.querySelector('progress#download-progress[value="70"][max="100"]') !== null`,
+      },
+      {
+        id: 'meter_exists',
+        description: 'Verify meter element exists with value="0.6".',
+        checkFn: `document.querySelector('meter#storage-meter[value="0.6"]') !== null`,
+      },
+    ],
+    hints: ['Write attributes as `value="70"` and `max="100"`.'],
+    published: true,
+  }));
+
+  htmlChallenges.push(await Challenge.create({
     moduleId: htmlModule3._id,
     title: 'Build Portfolio Website',
     description: `### Final Project: Build Portfolio Website\n\nCreate a personal portfolio layout using all your HTML knowledge. It must contain the following structural and content elements:\n\n1. A main heading \`<h1>\` with your name.\n2. An ID-targeted paragraph \`<p id="bio">\` with a brief bio description.\n3. An unordered list \`<ul>\` with class \`skills-list\` containing at least three \`<li>\` elements listing your developer skills.\n4. A contact form containing an \`<input id="contact-email" type="email">\` and a \`<textarea id="contact-msg">\`.\n5. An anchor link pointing to your github profile page \`https://github.com\` with target \`_blank\`.\n\n### Objective\nAssemble your profile page containing headings, paragraph tags, unordered lists, input forms, textareas, and hyperlinks.`,
@@ -901,6 +1101,166 @@ async function seed() {
       },
     ],
     hints: ['Declare `position: absolute;` on `.decor-circle` so it positions relative to the hero container.', 'Write transition properties as: `transition: transform 0.2s ease;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule1._id,
+    title: 'Border Box Sizing',
+    description: `### CSS Box Sizing\n\nBy default, padding and border expand an element's total width. Setting \`box-sizing: border-box\` includes them in the width.\n\n### Objective\nStyle \`.box-card\` with \`box-sizing: border-box;\`, \`width: 200px;\`, \`padding: 20px;\`, and \`border: 5px solid red;\`.`,
+    language: 'css',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<style>\n  .box-card {\n    /* Add styles here */\n  }\n</style>\n<div class="box-card">Box Sizing Test</div>`,
+    solution: `<style>\n  .box-card {\n    box-sizing: border-box;\n    width: 200px;\n    padding: 20px;\n    border: 5px solid red;\n  }\n</style>\n<div class="box-card">Box Sizing Test</div>`,
+    validationRules: [
+      {
+        id: 'box_sizing',
+        description: 'Verify .box-card uses box-sizing: border-box and width 200px.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.box-card')); return s.boxSizing === 'border-box' && s.width === '200px'; })()`,
+      },
+    ],
+    hints: ['Use `box-sizing: border-box;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule1._id,
+    title: 'CSS Outline and Offset',
+    description: `### Focus Outlines\n\nOutlines do not take up layout space. Use \`outline-offset\` to create breathing room around focus rings.\n\n### Objective\nStyle \`.focus-btn\` with \`outline: 3px solid rgb(99, 102, 241);\` and \`outline-offset: 4px;\`.`,
+    language: 'css',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<style>\n  .focus-btn {\n    /* Add styles here */\n  }\n</style>\n<button class="focus-btn">Accessible Button</button>`,
+    solution: `<style>\n  .focus-btn {\n    outline: 3px solid rgb(99, 102, 241);\n    outline-offset: 4px;\n  }\n</style>\n<button class="focus-btn">Accessible Button</button>`,
+    validationRules: [
+      {
+        id: 'outline_style',
+        description: 'Verify .focus-btn has outline 3px solid rgb(99, 102, 241) and offset 4px.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.focus-btn')); return s.outlineStyle === 'solid' && s.outlineOffset === '4px'; })()`,
+      },
+    ],
+    hints: ['Use `outline-offset: 4px;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule1._id,
+    title: 'Custom Scrollbar Container',
+    description: `### Scroll Containers\n\nControl vertical scrolling behavior when content overflows a container.\n\n### Objective\nStyle \`.scroll-box\` with \`height: 150px;\` and \`overflow-y: scroll;\`.`,
+    language: 'css',
+    difficulty: 'medium',
+    xp: 25,
+    starterCode: `<style>\n  .scroll-box {\n    /* Add styles here */\n  }\n</style>\n<div class="scroll-box"><p>Long content...</p><p>More text...</p><p>Extra lines...</p></div>`,
+    solution: `<style>\n  .scroll-box {\n    height: 150px;\n    overflow-y: scroll;\n  }\n</style>\n<div class="scroll-box"><p>Long content...</p><p>More text...</p><p>Extra lines...</p></div>`,
+    validationRules: [
+      {
+        id: 'scroll_box',
+        description: 'Verify .scroll-box has height 150px and overflow-y: scroll.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.scroll-box')); return s.height === '150px' && s.overflowY === 'scroll'; })()`,
+      },
+    ],
+    hints: ['Use `overflow-y: scroll;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule2._id,
+    title: 'Text Shadow Drop Effects',
+    description: `### Text Shadows\n\nAdd depth to typography using the \`text-shadow\` property.\n\n### Objective\nStyle \`.glow-title\` with \`text-shadow: 2px 2px 8px rgba(99, 102, 241, 0.8);\`.`,
+    language: 'css',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<style>\n  .glow-title {\n    /* Add styles here */\n  }\n</style>\n<h1 class="glow-title">Glowing Heading</h1>`,
+    solution: `<style>\n  .glow-title {\n    text-shadow: 2px 2px 8px rgba(99, 102, 241, 0.8);\n  }\n</style>\n<h1 class="glow-title">Glowing Heading</h1>`,
+    validationRules: [
+      {
+        id: 'text_shadow',
+        description: 'Verify .glow-title has text-shadow applied.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.glow-title')); return s.textShadow !== 'none'; })()`,
+      },
+    ],
+    hints: ['Use `text-shadow: 2px 2px 8px rgba(99, 102, 241, 0.8);`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule2._id,
+    title: 'Gradient Text Masking',
+    description: `### Gradient Typography\n\nCombine linear background gradients with text color masking.\n\n### Objective\nStyle \`.gradient-text\` with \`background-image: linear-gradient(to right, rgb(245, 158, 11), rgb(99, 102, 241));\` and \`color: transparent;\`.`,
+    language: 'css',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<style>\n  .gradient-text {\n    /* Add styles here */\n  }\n</style>\n<h1 class="gradient-text">Gradient Text</h1>`,
+    solution: `<style>\n  .gradient-text {\n    background-image: linear-gradient(to right, rgb(245, 158, 11), rgb(99, 102, 241));\n    color: transparent;\n  }\n</style>\n<h1 class="gradient-text">Gradient Text</h1>`,
+    validationRules: [
+      {
+        id: 'gradient_text',
+        description: 'Verify .gradient-text has background-image linear gradient and transparent text color.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.gradient-text')); return s.backgroundImage.includes('gradient') && (s.color === 'transparent' || s.color === 'rgba(0, 0, 0, 0)'); })()`,
+      },
+    ],
+    hints: ['Set `color: transparent;`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule2._id,
+    title: 'Image Filter Adjustments',
+    description: `### Image Filters\n\nApply real-time CSS graphical effects to images like grayscale or blur.\n\n### Objective\nStyle \`.gray-image\` with \`filter: grayscale(100%);\`.`,
+    language: 'css',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<style>\n  .gray-image {\n    /* Add styles here */\n  }\n</style>\n<img class="gray-image" src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300" />`,
+    solution: `<style>\n  .gray-image {\n    filter: grayscale(100%);\n  }\n</style>\n<img class="gray-image" src="https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=300" />`,
+    validationRules: [
+      {
+        id: 'grayscale_filter',
+        description: 'Verify .gray-image uses filter: grayscale(100%).',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.gray-image')); return s.filter.includes('grayscale'); })()`,
+      },
+    ],
+    hints: ['Use `filter: grayscale(100%);`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule3._id,
+    title: 'Fluid Typography with Clamp',
+    description: `### Responsive Typography\n\n\`clamp(min, preferred, max)\` scales font sizes fluidly based on viewport size.\n\n### Objective\nStyle \`.fluid-heading\` with \`font-size: clamp(16px, 4vw, 48px);\`.`,
+    language: 'css',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<style>\n  .fluid-heading {\n    /* Add styles here */\n  }\n</style>\n<h1 class="fluid-heading">Fluid Title</h1>`,
+    solution: `<style>\n  .fluid-heading {\n    font-size: clamp(16px, 4vw, 48px);\n  }\n</style>\n<h1 class="fluid-heading">Fluid Title</h1>`,
+    validationRules: [
+      {
+        id: 'font_size_clamp',
+        description: 'Verify .fluid-heading has font-size specified.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.fluid-heading')); return Boolean(s.fontSize); })()`,
+      },
+    ],
+    hints: ['Use `font-size: clamp(16px, 4vw, 48px);`.'],
+    published: true,
+  }));
+
+  cssChallenges.push(await Challenge.create({
+    moduleId: cssModule3._id,
+    title: 'Aspect Ratio Box Containers',
+    description: `### Responsive Media Ratios\n\nPreserve media dimensions using the native \`aspect-ratio\` property.\n\n### Objective\nStyle \`.video-container\` with \`aspect-ratio: 16 / 9;\` and \`width: 100%;\`.`,
+    language: 'css',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<style>\n  .video-container {\n    /* Add styles here */\n  }\n</style>\n<div class="video-container">Video Frame</div>`,
+    solution: `<style>\n  .video-container {\n    aspect-ratio: 16 / 9;\n    width: 100%;\n  }\n</style>\n<div class="video-container">Video Frame</div>`,
+    validationRules: [
+      {
+        id: 'aspect_ratio_applied',
+        description: 'Verify .video-container has aspect-ratio: 16 / 9 and width: 100%.',
+        checkFn: `(() => { const s = window.getComputedStyle(document.querySelector('.video-container')); return (s.aspectRatio === '16 / 9' || s.aspectRatio.includes('1.777')) && s.width !== '0px'; })()`,
+      },
+    ],
+    hints: ['Use `aspect-ratio: 16 / 9;`.'],
     published: true,
   }));
 
@@ -1372,6 +1732,166 @@ async function seed() {
       },
     ],
     hints: ['Read input value, trim whitespace using \`.trim()\`, and set result textContent matching the specified string.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule1._id,
+    title: 'Live Character Counter',
+    description: `### Real-time Input Listeners\n\nCount characters typed inside a textarea live and display the count.\n\n### Objective\nAttach an \`input\` event listener to \`#user-msg\` so that \`#char-num\` textContent reflects the current length of \`#user-msg\` value.`,
+    language: 'javascript',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<textarea id="user-msg" placeholder="Type message..."></textarea>\n<p>Count: <span id="char-num">0</span></p>\n<script>\n  const msg = document.getElementById('user-msg');\n  const num = document.getElementById('char-num');\n  // Add input listener here\n</script>`,
+    solution: `<textarea id="user-msg" placeholder="Type message..."></textarea>\n<p>Count: <span id="char-num">0</span></p>\n<script>\n  const msg = document.getElementById('user-msg');\n  const num = document.getElementById('char-num');\n  msg.addEventListener('input', () => {\n    num.textContent = msg.value.length;\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'counter_works',
+        description: 'Verify typing inside #user-msg updates #char-num textContent to the string length.',
+        checkFn: `(() => { const msg = document.getElementById('user-msg'); const num = document.getElementById('char-num'); msg.value = 'Hello'; msg.dispatchEvent(new Event('input')); return num.textContent.trim() === '5'; })()`,
+      },
+    ],
+    hints: ['Read `msg.value.length` on `input` event.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule1._id,
+    title: 'Password Visibility Toggle',
+    description: `### Attribute Toggling\n\nToggle password field input types between \`'password'\` and \`'text'\` on button click.\n\n### Objective\nWhen clicking \`#toggle-btn\`, switch \`<input id="pass-field">\` type attribute from \`'password'\` to \`'text'\` (or vice-versa).`,
+    language: 'javascript',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<input id="pass-field" type="password" value="secret123" />\n<button id="toggle-btn">Show/Hide</button>\n<script>\n  const pass = document.getElementById('pass-field');\n  const btn = document.getElementById('toggle-btn');\n  // Add click listener to toggle input type\n</script>`,
+    solution: `<input id="pass-field" type="password" value="secret123" />\n<button id="toggle-btn">Show/Hide</button>\n<script>\n  const pass = document.getElementById('pass-field');\n  const btn = document.getElementById('toggle-btn');\n  btn.addEventListener('click', () => {\n    pass.type = pass.type === 'password' ? 'text' : 'password';\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'toggle_works',
+        description: 'Verify clicking #toggle-btn toggles #pass-field type between "password" and "text".',
+        checkFn: `(() => { const pass = document.getElementById('pass-field'); const btn = document.getElementById('toggle-btn'); btn.click(); return pass.type === 'text'; })()`,
+      },
+    ],
+    hints: ['Check `pass.type === "password"` and switch it.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule1._id,
+    title: 'Double Click Element Highlight',
+    description: `### Mouse Event Listeners\n\nListen for \`dblclick\` events to toggle CSS classes dynamically.\n\n### Objective\nOn double-clicking \`#card-box\`, add class \`highlighted\` to \`#card-box\`.`,
+    language: 'javascript',
+    difficulty: 'easy',
+    xp: 20,
+    starterCode: `<div id="card-box" style="padding:20px; border:1px solid #ccc;">Double Click Me</div>\n<script>\n  const box = document.getElementById('card-box');\n  // Add dblclick listener here\n</script>`,
+    solution: `<div id="card-box" style="padding:20px; border:1px solid #ccc;">Double Click Me</div>\n<script>\n  const box = document.getElementById('card-box');\n  box.addEventListener('dblclick', () => {\n    box.classList.add('highlighted');\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'dblclick_works',
+        description: 'Verify double-clicking #card-box adds class "highlighted".',
+        checkFn: `(() => { const box = document.getElementById('card-box'); box.dispatchEvent(new MouseEvent('dblclick')); return box.classList.contains('highlighted'); })()`,
+      },
+    ],
+    hints: ['Use `box.addEventListener("dblclick", ...)`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule2._id,
+    title: 'Simple Tip Calculator',
+    description: `### Form Calculation Logic\n\nCalculate tip totals based on input bill amount \`#bill-amount\` and selected tip percentage \`#tip-percent\`.\n\n### Objective\nWhen \`#calc-tip\` is clicked, compute \`(bill * tipPercent / 100)\` and display the tip amount inside \`#tip-total\`.`,
+    language: 'javascript',
+    difficulty: 'medium',
+    xp: 35,
+    starterCode: `<input id="bill-amount" type="number" placeholder="Bill Amount" />\n<select id="tip-percent">\n  <option value="15">15%</option>\n  <option value="20">20%</option>\n</select>\n<button id="calc-tip">Calculate Tip</button>\n<p id="tip-total">$0</p>\n<script>\n  const bill = document.getElementById('bill-amount');\n  const tip = document.getElementById('tip-percent');\n  const btn = document.getElementById('calc-tip');\n  const total = document.getElementById('tip-total');\n  // Add calculation logic here\n</script>`,
+    solution: `<input id="bill-amount" type="number" placeholder="Bill Amount" />\n<select id="tip-percent">\n  <option value="15">15%</option>\n  <option value="20">20%</option>\n</select>\n<button id="calc-tip">Calculate Tip</button>\n<p id="tip-total">$0</p>\n<script>\n  const bill = document.getElementById('bill-amount');\n  const tip = document.getElementById('tip-percent');\n  const btn = document.getElementById('calc-tip');\n  const total = document.getElementById('tip-total');\n  btn.addEventListener('click', () => {\n    const amt = (parseFloat(bill.value) * parseFloat(tip.value)) / 100;\n    total.textContent = '$' + amt;\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'tip_calc_works',
+        description: 'Verify entering $100 bill with 15% tip updates #tip-total to contain "15".',
+        checkFn: `(() => { document.getElementById('bill-amount').value = '100'; document.getElementById('tip-percent').value = '15'; document.getElementById('calc-tip').click(); return document.getElementById('tip-total').textContent.includes('15'); })()`,
+      },
+    ],
+    hints: ['Parse input values as numbers using `parseFloat()`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule2._id,
+    title: 'Array Filter Search',
+    description: `### Filtering DOM Lists\n\nFilter list items based on user search query.\n\n### Objective\nAttach an \`input\` listener to \`#search-query\` to filter list items \`.search-item\`. Set \`style.display = 'none'\` for items that do not include the typed query.`,
+    language: 'javascript',
+    difficulty: 'medium',
+    xp: 35,
+    starterCode: `<input id="search-query" placeholder="Search..." />\n<ul>\n  <li class="search-item">Apple</li>\n  <li class="search-item">Banana</li>\n  <li class="search-item">Cherry</li>\n</ul>\n<script>\n  const input = document.getElementById('search-query');\n  const items = document.querySelectorAll('.search-item');\n  // Add search filter listener here\n</script>`,
+    solution: `<input id="search-query" placeholder="Search..." />\n<ul>\n  <li class="search-item">Apple</li>\n  <li class="search-item">Banana</li>\n  <li class="search-item">Cherry</li>\n</ul>\n<script>\n  const input = document.getElementById('search-query');\n  const items = document.querySelectorAll('.search-item');\n  input.addEventListener('input', () => {\n    const q = input.value.toLowerCase();\n    items.forEach(item => {\n      const text = item.textContent.toLowerCase();\n      item.style.display = text.includes(q) ? '' : 'none';\n    });\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'filter_works',
+        description: 'Verify typing "Apple" hides Banana and Cherry.',
+        checkFn: `(() => { const input = document.getElementById('search-query'); const items = Array.from(document.querySelectorAll('.search-item')); input.value = 'Apple'; input.dispatchEvent(new Event('input')); return items[0].style.display !== 'none' && items[1].style.display === 'none'; })()`,
+      },
+    ],
+    hints: ['Use `item.style.display = text.includes(q) ? "" : "none"`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule2._id,
+    title: 'Accordion Panel Toggle',
+    description: `### Component UI State\n\nExpand and collapse accordion panels on header click.\n\n### Objective\nWhen clicking \`#accordion-head\`, toggle the class \`open\` on \`#accordion-body\`.`,
+    language: 'javascript',
+    difficulty: 'easy',
+    xp: 25,
+    starterCode: `<button id="accordion-head">Toggle Panel</button>\n<div id="accordion-body">Panel Details...</div>\n<script>\n  const head = document.getElementById('accordion-head');\n  const body = document.getElementById('accordion-body');\n  // Add click toggle logic here\n</script>`,
+    solution: `<button id="accordion-head">Toggle Panel</button>\n<div id="accordion-body">Panel Details...</div>\n<script>\n  const head = document.getElementById('accordion-head');\n  const body = document.getElementById('accordion-body');\n  head.addEventListener('click', () => {\n    body.classList.toggle('open');\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'accordion_toggle_works',
+        description: 'Verify clicking #accordion-head toggles class "open" on #accordion-body.',
+        checkFn: `(() => { const head = document.getElementById('accordion-head'); const body = document.getElementById('accordion-body'); head.click(); return body.classList.contains('open'); })()`,
+      },
+    ],
+    hints: ['Use `body.classList.toggle("open")`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule3._id,
+    title: 'Debounced Input Logger',
+    description: `### Debouncing Logic\n\nDelay execution until a specified time has elapsed since the last event.\n\n### Objective\nWhen typing in \`#search-input\`, delay updating \`#status-text\` text to \`'Searched: ' + value\` by 300ms using \`setTimeout\` and \`clearTimeout\`.`,
+    language: 'javascript',
+    difficulty: 'hard',
+    xp: 40,
+    starterCode: `<input id="search-input" placeholder="Type fast..." />\n<p id="status-text">Idle</p>\n<script>\n  const input = document.getElementById('search-input');\n  const status = document.getElementById('status-text');\n  let timer;\n  // Add debounced input listener here\n</script>`,
+    solution: `<input id="search-input" placeholder="Type fast..." />\n<p id="status-text">Idle</p>\n<script>\n  const input = document.getElementById('search-input');\n  const status = document.getElementById('status-text');\n  let timer;\n  input.addEventListener('input', () => {\n    clearTimeout(timer);\n    timer = setTimeout(() => {\n      status.textContent = 'Searched: ' + input.value;\n    }, 300);\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'debounced_works',
+        description: 'Verify typing updates #status-text after delay.',
+        checkFn: `(() => { const input = document.getElementById('search-input'); const status = document.getElementById('status-text'); input.value = 'Code'; input.dispatchEvent(new Event('input')); return status !== null; })()`,
+      },
+    ],
+    hints: ['Clear the previous `timer` before setting a new `setTimeout`.'],
+    published: true,
+  }));
+
+  jsChallenges.push(await Challenge.create({
+    moduleId: jsModule3._id,
+    title: 'Session Storage Draft Keeper',
+    description: `### SessionStorage API\n\nPersist temporary user state during a browser session using \`sessionStorage\`.\n\n### Objective\nOn \`input\` event of \`#draft-area\`, save its current value to \`sessionStorage\` with key \`'draft_note'\`.`,
+    language: 'javascript',
+    difficulty: 'medium',
+    xp: 30,
+    starterCode: `<textarea id="draft-area" placeholder="Write draft..."></textarea>\n<script>\n  const area = document.getElementById('draft-area');\n  // Add input listener to save to sessionStorage\n</script>`,
+    solution: `<textarea id="draft-area" placeholder="Write draft..."></textarea>\n<script>\n  const area = document.getElementById('draft-area');\n  area.addEventListener('input', () => {\n    sessionStorage.setItem('draft_note', area.value);\n  });\n</script>`,
+    validationRules: [
+      {
+        id: 'session_storage_saved',
+        description: 'Verify typing in #draft-area saves value to sessionStorage under key "draft_note".',
+        checkFn: `(() => { const area = document.getElementById('draft-area'); area.value = 'My Note'; area.dispatchEvent(new Event('input')); return sessionStorage.getItem('draft_note') === 'My Note'; })()`,
+      },
+    ],
+    hints: ['Use `sessionStorage.setItem("draft_note", area.value)`.'],
     published: true,
   }));
 
