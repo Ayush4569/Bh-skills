@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -98,36 +99,36 @@ const ROADMAP_CONFIGS: Record<string, MainTopicConfig[]> = {
           moduleOrders: [4]
         },
         {
-          title: 'CSS Styling & Typography',
-          description: 'Control font sizes, weights, border radius, and text alignment.',
+          title: 'CSS Flexbox & Layouts',
+          description: 'Master display flex, flex-direction, justify-content, and align-items.',
           moduleOrders: [5]
         },
         {
-          title: 'CSS Advanced Layouts',
-          description: 'Master grid layouts, absolute positioning, hover transitions, and drop shadows.',
+          title: 'CSS Grid & Positioning',
+          description: 'Master grid templates, gap spacing, and absolute/relative positioning.',
           moduleOrders: [6]
         }
       ]
     },
     {
       title: 'JavaScript Interactivity',
-      description: 'Add logic, DOM interaction, loops, dynamic rendering, and local storage to build web apps.',
+      description: 'DOM selection, event handlers, state logic, dynamic renders, and algorithms.',
       badge: 'LOGIC',
       duration: '4-5 Days',
       subtopics: [
         {
-          title: 'JS DOM & Events',
-          description: 'Handle click counters, toggle background colors, and process input greetings.',
+          title: 'JavaScript DOM & Events',
+          description: 'Master getElementById, querySelector, and addEventListener.',
           moduleOrders: [7]
         },
         {
-          title: 'JS Controls & Logic',
-          description: 'Toggle visibility modals, render array items to the DOM, and calculate temperature conversions.',
+          title: 'JavaScript Logic & State',
+          description: 'Master conditionals, array methods, local state updates, and functions.',
           moduleOrders: [8]
         },
         {
-          title: 'JS Advanced Browser APIs',
-          description: 'Manage class name toggling, intervals, list filters, and localStorage.',
+          title: 'JavaScript Async & APIs',
+          description: 'Master fetch API, Promises, async/await, and JSON parsing.',
           moduleOrders: [9]
         }
       ]
@@ -135,25 +136,48 @@ const ROADMAP_CONFIGS: Record<string, MainTopicConfig[]> = {
   ],
   python: [
     {
-      title: 'Python Programming',
-      description: 'Master Python core syntax, data structures, conditional control flow, loops, and Object-Oriented programming.',
-      badge: 'CORE LANGUAGE',
-      duration: '1-2 Weeks',
+      title: 'Python Core',
+      description: 'Variables, basic IO, control structures, and loops.',
+      badge: 'FOUNDATION',
+      duration: '2-3 Days',
       subtopics: [
         {
-          title: 'Python Fundamentals',
-          description: 'Get started with print statements, variables, basic arithmetic, conditionals, loops, and string slicing.',
-          moduleOrders: [1, 2]
+          title: 'Python Basics & Variables',
+          description: 'Learn print statements, variable assignment, and basic math.',
+          moduleOrders: [1]
         },
         {
-          title: 'Functions & Data Structures',
-          description: 'Master custom functions, vowel counting, recursion, lists, dictionaries, sets, and word frequencies.',
-          moduleOrders: [3, 4]
+          title: 'Control Flow & Conditionals',
+          description: 'Master if/elif/else statements and boolean logic.',
+          moduleOrders: [2]
         },
         {
-          title: 'OOP & Algorithms',
-          description: 'Create classes with constructors, handle divide errors, inherit classes, and validate IP addresses.',
-          moduleOrders: [5, 6]
+          title: 'Loops & Iteration',
+          description: 'Master for loops, while loops, range(), and break/continue.',
+          moduleOrders: [3]
+        }
+      ]
+    },
+    {
+      title: 'Data Structures & Functions',
+      description: 'Lists, dictionaries, tuples, and modular programming.',
+      badge: 'STRUCTURES',
+      duration: '3-4 Days',
+      subtopics: [
+        {
+          title: 'Functions & Scope',
+          description: 'Define reusable functions, parameters, return values, and scope.',
+          moduleOrders: [4]
+        },
+        {
+          title: 'Lists & Strings',
+          description: 'Manipulate lists, string formatting, slicing, and methods.',
+          moduleOrders: [5]
+        },
+        {
+          title: 'Dictionaries & Sets',
+          description: 'Work with key-value pairs, hash maps, and set operations.',
+          moduleOrders: [6]
         }
       ]
     }
@@ -174,48 +198,46 @@ const FINAL_PROJECT_TITLES = new Set([
   'Student Manager'
 ]);
 
-export default function PathLabs({ params }: { params: Promise<{ path: string }> }) {
+export default function CoursePath({ params }: { params: Promise<{ path: string }> }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { path } = use(params);
-
-  const [data, setData] = useState<CourseData | null>(null);
-  const [loading, setLoading] = useState(true);
   const { progress } = useProgress();
+
+  const focusedTopic = searchParams.get('topic');
+
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`/api/labs/courses/${path}`)
       .then((res) => res.json())
-      .then((resData) => {
-        if (resData.course) {
-          setData(resData);
-        }
-      })
+      .then((data) => setCourseData(data))
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, [path]);
 
   if (loading) {
-    return <LoadingScreen message="Loading roadmap modules..." />;
+    return <LoadingScreen message="Loading roadmap details..." />;
   }
 
-  if (!data) {
+  if (!courseData || !courseData.course) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-background">
-        <h2 className="text-xl font-bold">Path not found</h2>
-        <Link href="/labs" className="mt-4 text-sm text-indigo-600 hover:underline inline-flex items-center gap-1">
-          <ArrowLeft className="h-4 w-4" /> Back to paths
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 space-y-4">
+        <p className="text-sm font-semibold text-rose-500">Path not found</p>
+        <Link href="/labs">
+          <Button variant="outline">Back to paths</Button>
         </Link>
       </div>
     );
   }
 
-  const { course, modules } = data;
+  const { course, modules } = courseData;
   const isWeb = course.slug === 'web';
+  const roadmapConfig = ROADMAP_CONFIGS[course.slug] || [];
 
-  const configs = ROADMAP_CONFIGS[course.slug] || [];
-
-  // Group fetched database modules into the configuration topics, filtering out final projects
-  const groupedTopics = configs.map((config) => {
-    // 1. Map regular subtopics, filtering out final projects
+  const groupedTopics = roadmapConfig.map((config) => {
+    // 1. Map regular subtopics, using DB module titles dynamically so they match /labs 100%
     const subtopics = config.subtopics.map((subConfig) => {
       const matchedModules = modules.filter((m) =>
         subConfig.moduleOrders.includes(m.order)
@@ -225,9 +247,12 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
         .flatMap((m) => m.challenges || [])
         .filter((c) => !FINAL_PROJECT_TITLES.has(c.title));
 
+      const title = matchedModules.length > 0 ? matchedModules[0].title : subConfig.title;
+      const description = matchedModules.length > 0 ? matchedModules[0].description : subConfig.description;
+
       return {
-        title: subConfig.title,
-        description: subConfig.description,
+        title,
+        description,
         challenges,
       };
     });
@@ -293,7 +318,6 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
     };
   });
 
-  // Calculate stats based on challenges
   const allChallenges = modules.flatMap(m => m.challenges);
   const totalProblems = allChallenges.length;
   const solvedProblems = allChallenges.filter(c => progress?.completedChallenges?.includes(c._id)).length;
@@ -302,7 +326,6 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto max-w-5xl w-full px-4 py-12 sm:px-6 lg:px-8 space-y-12">
-        {/* Back Link */}
         <div className="flex items-center">
           <Link href="/labs">
             <Button variant="outline" size="sm" className="gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground">
@@ -312,7 +335,6 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
           </Link>
         </div>
 
-        {/* Path Main Header */}
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/10 text-indigo-500 mb-2">
             <Trophy className="h-8 w-8" />
@@ -326,7 +348,6 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
             {course.description}
           </p>
 
-          {/* Stats Capsule */}
           <div className="pt-4 flex justify-center">
             <div className="inline-flex items-center gap-4 rounded-full border border-border bg-card px-8 py-3 text-xs sm:text-sm font-bold shadow-sm text-muted-foreground divide-x divide-border">
               <div className="flex items-center gap-2 text-foreground/80">
@@ -345,67 +366,52 @@ export default function PathLabs({ params }: { params: Promise<{ path: string }>
           </div>
         </div>
 
-        {/* Vertical Timeline Roadmap */}
         <div className="relative pt-12 pb-24 max-w-4xl mx-auto space-y-20">
-          {/* Main vertical timeline line - sits at z-0 */}
           <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-border/60 z-0" />
 
-          {groupedTopics.map((topic, topicIdx) => {
-            return (
-              <div key={topicIdx} className="space-y-12 relative z-10">
-                {/* Main Topic Center Card */}
-                <div className="relative flex justify-center w-full z-20">
-                  <Card className="w-full md:max-w-md ml-12 md:ml-0 p-5 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
-                    {/* Decorative background glow */}
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full" />
-                    
-                    <div className="flex items-start gap-4">
-                      {/* Icon Box */}
-                      <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/10 shrink-0">
-                        {course.slug === 'web' ? (
-                          topicIdx === 0 ? <Globe className="h-5 w-5" /> :
-                          topicIdx === 1 ? <Layers className="h-5 w-5" /> :
-                          <Terminal className="h-5 w-5" />
-                        ) : (
-                          <Terminal className="h-5 w-5" />
-                        )}
-                      </div>
-
-                      <div className="space-y-1.5  flex-1 text-left">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <h2 className="text-base font-extrabold tracking-tight text-foreground leading-snug">
-                            {topic.title}
-                          </h2>
-                          <Badge variant="secondary" className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
-                            {topic.badge}
-                          </Badge>
-                          <Badge variant="outline" className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
-                            {topic.duration}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {topic.description}
-                        </p>
-                      </div>
+          {groupedTopics.map((topic, topicIdx) => (
+            <div key={topicIdx} className="space-y-12 relative z-10">
+              <div className="relative flex justify-center w-full z-20">
+                <Card className="w-full md:max-w-md ml-12 md:ml-0 p-5 relative overflow-hidden group hover:border-indigo-500/40 transition-colors">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-2xl rounded-full" />
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-500 border border-indigo-500/10 shrink-0">
+                      <Terminal className="h-5 w-5" />
                     </div>
-                  </Card>
-                </div>
-
-                {/* Subtopics of this Main Topic */}
-                <div className="space-y-10 relative">
-                  {topic.subtopics.map((subtopic, subIdx) => (
-                    <SubtopicTimelineCard
-                      key={subIdx}
-                      subtopic={subtopic}
-                      subIdx={subIdx}
-                      isWeb={isWeb}
-                      progress={progress}
-                    />
-                  ))}
-                </div>
+                    <div className="space-y-1.5  flex-1 text-left">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <h2 className="text-base font-extrabold tracking-tight text-foreground leading-snug">
+                          {topic.title}
+                        </h2>
+                        <Badge variant="secondary" className="text-[9px] font-extrabold uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
+                          {topic.badge}
+                        </Badge>
+                        <Badge variant="outline" className="text-[9px] font-extrabold uppercase tracking-wider text-muted-foreground">
+                          {topic.duration}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {topic.description}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
               </div>
-            );
-          })}
+
+              <div className="space-y-10 relative">
+                {topic.subtopics.map((subtopic, subIdx) => (
+                  <SubtopicTimelineCard
+                    key={subIdx}
+                    subtopic={subtopic}
+                    subIdx={subIdx}
+                    isWeb={isWeb}
+                    progress={progress}
+                    focusedTopic={focusedTopic}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -423,16 +429,38 @@ function SubtopicTimelineCard({
   subIdx,
   isWeb,
   progress,
+  focusedTopic,
 }: {
   subtopic: SubTopicItem;
   subIdx: number;
   isWeb: boolean;
   progress: any;
+  focusedTopic: string | null;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const isRight = subIdx % 2 === 0;
 
-  // Calculate subtopic completion progress
+  const cleanSub = subtopic.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const cleanFocused = focusedTopic ? focusedTopic.toLowerCase().replace(/[^a-z0-9]/g, '') : '';
+
+  const isFocused =
+    Boolean(focusedTopic) &&
+    (subtopic.title.toLowerCase().trim() === focusedTopic!.toLowerCase().trim() ||
+      subtopic.title.toLowerCase().includes(focusedTopic!.toLowerCase()) ||
+      focusedTopic!.toLowerCase().includes(subtopic.title.toLowerCase()) ||
+      (cleanSub.length > 3 && cleanFocused.length > 3 && (cleanSub.includes(cleanFocused) || cleanFocused.includes(cleanSub))));
+
+  useEffect(() => {
+    if (isFocused) {
+      setIsHovered(true);
+      const timer = setTimeout(() => {
+        cardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [isFocused]);
+
   const subChallenges = subtopic.challenges;
   const totalSub = subChallenges.length;
   const solvedSub = subChallenges.filter((c) => progress?.completedChallenges?.includes(c._id)).length;
@@ -487,7 +515,7 @@ function SubtopicTimelineCard({
       </div>
 
       {/* Subtopic Card wrapper */}
-      <div className="w-full md:w-[420px] rounded-md ml-14 md:ml-0">
+      <div ref={cardRef} className="w-full md:w-[420px] rounded-md ml-14 md:ml-0">
         <motion.div
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -496,7 +524,11 @@ function SubtopicTimelineCard({
         >
           <Card
             className={`p-4 sm:p-5 transition-all duration-300 relative cursor-pointer ${
-              isHovered
+              isFocused
+                ? isWeb
+                  ? 'border-amber-500 ring-4 ring-amber-500/30 shadow-[0_0_25px_rgba(245,158,11,0.2)]'
+                  : 'border-indigo-500 ring-4 ring-indigo-500/30 shadow-[0_0_25px_rgba(99,102,241,0.2)]'
+                : isHovered
                 ? isWeb
                   ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.08)]'
                   : 'border-indigo-500/60 shadow-[0_0_20px_rgba(99,102,241,0.08)]'

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -38,6 +38,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
 export default function Dashboard() {
   const { progress, xpLogs, attemptsCount, allAchievements, loading, refetchProgress } = useProgress();
   const [resetting, setResetting] = useState(false);
+  const [customPaths, setCustomPaths] = useState<any[]>([]);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -49,6 +50,17 @@ export default function Dashboard() {
     message: '',
     onConfirm: () => {},
   });
+
+  useEffect(() => {
+    fetch('/api/labs/custom-path')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCustomPaths(data);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   // Level boundary calculations
   // Level threshold is 150 XP per level
@@ -245,6 +257,35 @@ export default function Dashboard() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Card>
+
+              {/* Custom Paths Cards */}
+              {customPaths.map((cPath) => {
+                const total = cPath.challengeIds?.length || 0;
+                const solved = cPath.challengeIds?.filter((c: any) => progress?.completedChallenges?.includes(c._id)).length || 0;
+
+                return (
+                  <Card key={cPath._id} className="group p-6 flex flex-col justify-between border-indigo-500/30 bg-card hover:border-indigo-500/60 hover:shadow-[0_0_15px_rgba(99,102,241,0.04)] transition-all">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <CardTitle className="text-lg font-bold text-foreground truncate">{cPath.title}</CardTitle>
+                        <Badge variant="outline" className="text-[9px] font-bold text-indigo-500 border-indigo-500/30 bg-indigo-500/10">
+                          Custom Path
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-sm text-muted-foreground leading-relaxed">
+                        {total} challenges ({solved} solved) • {cPath.difficultyProfile} difficulty profile.
+                      </CardDescription>
+                    </div>
+                    <Link
+                      href={`/labs/custom/${cPath._id}`}
+                      className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-indigo-500 hover:text-indigo-600 transition-colors"
+                    >
+                      Launch Custom Roadmap
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Card>
+                );
+              })}
             </div>
           </div>
 
